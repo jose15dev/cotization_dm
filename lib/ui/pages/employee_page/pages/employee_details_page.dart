@@ -43,6 +43,7 @@ class _EmployeeDetailsView extends StatefulWidget {
 }
 
 class _EmployeeDetailsViewState extends State<_EmployeeDetailsView> {
+  final _draggableController = DraggableScrollableController();
   var _scroll = 0.0;
   late Employee employee;
   EmployeeDetailsCubit get bloc => BlocProvider.of(context);
@@ -96,11 +97,20 @@ class _EmployeeDetailsViewState extends State<_EmployeeDetailsView> {
             ),
             Align(
               alignment: FractionalOffset.center,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: EmployeeInfo(
-                  employee,
-                  onEdit: () => fetchBloc.onEditEmployee(employee),
+              child: GestureDetector(
+                onTap: () {
+                  _draggableController.animateTo(
+                    0.03,
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeInOut,
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: EmployeeInfo(
+                    employee,
+                    onEdit: () => fetchBloc.onEditEmployee(employee),
+                  ),
                 ),
               ),
             ),
@@ -113,6 +123,7 @@ class _EmployeeDetailsViewState extends State<_EmployeeDetailsView> {
                   return true;
                 }),
                 child: DraggableScrollableSheet(
+                  controller: _draggableController,
                   maxChildSize: 0.5,
                   minChildSize: 0.03,
                   initialChildSize: 0.03,
