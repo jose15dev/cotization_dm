@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:cotizacion_dm/core/domain/domain.dart';
@@ -350,7 +349,7 @@ class _FetchEmployeeListState extends State<FetchEmployeeList>
                                 fontSize: 30, color: Colors.grey.shade700),
                           ),
                           Text(
-                            CurrencyUtility.doubleToCurrency(employee.salary),
+                            "Cobra ${CurrencyUtility.doubleToCurrency(employee.salary)} COP",
                             style: TextStyle(
                               fontSize: 20,
                               color: Colors.grey.shade500,

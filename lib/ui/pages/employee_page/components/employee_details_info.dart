@@ -69,7 +69,7 @@ class _EmployeeInfoState extends State<EmployeeInfo>
                 _salaryAnimation.value,
               )!,
               child: Text(
-                CurrencyUtility.doubleToCurrency(widget.employee.salary),
+                "${CurrencyUtility.doubleToCurrency(widget.employee.salary)} COP",
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 30,
