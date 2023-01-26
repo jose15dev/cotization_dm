@@ -12,14 +12,6 @@ class CustomStackPage {
 
 final initialPages = [
   CustomStackPage(
-    "Inicio",
-    Container(
-      child: Center(
-        child: Text("Home"),
-      ),
-    ),
-  ),
-  CustomStackPage(
     "Empleados",
     const FetchEmployeeList(),
   ),
@@ -73,11 +65,12 @@ class _InitialRootPageState extends State<InitialRootPage>
           isScrollable: true,
           indicator: DotIndicator(),
           labelStyle: const TextStyle(
-            fontSize: 20,
+            fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
           unselectedLabelStyle: const TextStyle(
-            fontSize: 14,
+            fontSize: 16,
+            color: Colors.grey,
           ),
           tabs: initialPages
               .map(
