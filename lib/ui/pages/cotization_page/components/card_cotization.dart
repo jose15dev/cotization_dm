@@ -1,281 +1,369 @@
+import 'dart:ui';
+
 import 'package:cotizacion_dm/core/domain/domain.dart';
-import 'package:cotizacion_dm/core/infrastructure/configuration/dependency_injection/injection.dart';
-import 'package:cotizacion_dm/core/infrastructure/configuration/pdf/pdf_cotization_service.dart';
-import 'package:cotizacion_dm/ui/pages/pages.dart';
+import 'package:cotizacion_dm/globals.dart';
 import 'package:cotizacion_dm/ui/utilities/utilities.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class CardCotization extends StatefulWidget {
-  const CardCotization(
-    this.cotization, {
+import 'dart:math' as math;
+
+class AnimatedCardCotization extends StatefulWidget {
+  const AnimatedCardCotization(
+    this.item, {
     Key? key,
+    this.color,
+    this.isDetail = false,
+    this.isUpdated = false,
   }) : super(key: key);
 
-  final Cotization cotization;
+  final Cotization item;
+  final Color? color;
+  final bool isDetail, isUpdated;
 
   @override
-  State<CardCotization> createState() => _CardCotizationState();
+  State<AnimatedCardCotization> createState() => _AnimatedCardCotizationState();
 }
 
-class _CardCotizationState extends State<CardCotization> {
-  FetchCotizationCubit get bloc => BlocProvider.of(context);
-  Offset? _tapPosition;
-  void _showPopupMenu() {
-    final RenderObject? overlay =
-        Overlay.of(context)?.context.findRenderObject();
-    if (_tapPosition != null && overlay != null) {
-      var rect = _tapPosition! & const Size(40, 40);
-      var container = overlay.paintBounds;
-      showMenu(
-              context: context,
-              position: RelativeRect.fromRect(rect, container),
-              color: ColorPalete.white,
-              items: [PopupMenu(isFinished: widget.cotization.finished)])
-          .then((value) {
-        if (value is PopupMenuAction) {
-          switch (value) {
-            case PopupMenuAction.delete:
-              {
-                _dialogFinish();
-                break;
-              }
-            case PopupMenuAction.edit:
-              {
-                bloc.onEditCotization(widget.cotization);
-                break;
-              }
+class _AnimatedCardCotizationState extends State<AnimatedCardCotization>
+    with TickerProviderStateMixin {
+  Offset _currentDraggingOffset = Offset.zero;
+  double _lastOffsetDy = 0.0;
+  late AnimationController _animationController;
 
-            case PopupMenuAction.finish:
-              {
-                bloc.onFinishCotization(widget.cotization);
-                PDFCotizationService service = getIt();
-                bloc.exportToPDF(widget.cotization, service);
-                break;
-              }
-            case PopupMenuAction.visualize:
-              {
-                PDFCotizationService service = getIt();
-                bloc.exportToPDF(widget.cotization, service);
-                break;
-              }
-            case PopupMenuAction.copy:
-              {
-                bloc.onEditCotization(widget.cotization, true);
-                break;
-              }
-          }
-        }
-      });
+  void _onDragEnd(DragEndDetails details) {
+    _lastOffsetDy = _currentDraggingOffset.dy;
+    final animation = Tween<double>(begin: _lastOffsetDy, end: 0.0)
+        .animate(_animationController);
+    animation.addListener(() {
+      if (mounted) {
+        setState(() {
+          _lastOffsetDy = animation.value;
+          _currentDraggingOffset = Offset(0.0, _lastOffsetDy);
+        });
+      }
+    });
+    if (!_animationController.isAnimating) {
+      _animationController.forward(from: 0.0);
     }
   }
 
-  void _storePosition(TapDownDetails details) {
+  void _onDragUpdate(DragUpdateDetails details) {
+    _lastOffsetDy += details.primaryDelta!;
+    if (_lastOffsetDy < -180) {
+      _lastOffsetDy = -180.0;
+    }
+    if (_lastOffsetDy > 180) {
+      _lastOffsetDy = 180.0;
+    }
     setState(() {
-      _tapPosition = details.globalPosition;
+      _currentDraggingOffset = Offset(0.0, _lastOffsetDy);
     });
   }
 
   @override
-  Widget build(BuildContext context) {
-    var borderRadius = BorderRadius.circular(40.0);
+  void initState() {
+    _animationController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 500));
+    super.initState();
+  }
 
-    var fg = Color(widget.cotization.color);
-    return Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: InkWell(
-        borderRadius: borderRadius,
-        onTap: () => bloc.onShowCotization(widget.cotization),
-        onLongPress: _showPopupMenu,
-        onTapDown: _storePosition,
-        child: Ink(
-          padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
-          decoration: BoxDecoration(
-            color: Color(widget.cotization.color).withOpacity(0.3),
-            borderRadius: borderRadius,
-          ),
-          child: Stack(
-            children: [
-              Align(
-                alignment: FractionalOffset.center,
-                child: _info(fg),
-              ),
-              Align(
-                alignment: FractionalOffset.bottomRight,
-                child: Icon(
-                  widget.cotization.finished
-                      ? Icons.check_circle
-                      : Icons.circle_outlined,
-                  size: 25,
-                  color: fg,
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  Color get color => widget.color ?? Color(widget.item.color);
+  final Color foreground = Colors.grey.shade900;
+  final Color colorIcon = ColorPalete.white;
+  double get currentAngle => (-math.pi / 180) * (_currentDraggingOffset.dy);
+  bool get canAnimate =>
+      widget.isDetail && (ModalRoute.of(context)?.animation?.value == 1.0);
+  double get currentAngleBack =>
+      (-math.pi / 180) * (_currentDraggingOffset.dy + 180);
+
+  bool get displayBack => (currentAngle < -1.5 || currentAngle > 1.5);
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, _) {
+          return LayoutBuilder(builder: (context, constraints) {
+            return Material(
+              color: Colors.transparent,
+              child: GestureDetector(
+                onHorizontalDragUpdate: canAnimate ? _onDragUpdate : null,
+                onHorizontalDragEnd: canAnimate ? _onDragEnd : null,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Positioned.fill(child: _front(constraints)),
+                    if (canAnimate && displayBack)
+                      Positioned.fill(child: _back(constraints))
+                  ],
                 ),
               ),
-              widget.cotization.isAccount
-                  ? Align(
-                      alignment: FractionalOffset.topRight,
-                      child: Icon(
-                        Icons.account_balance,
-                        size: 25,
-                        color: fg,
+            );
+          });
+        });
+  }
+
+  Widget _back(BoxConstraints constraints) {
+    return Transform(
+      alignment: Alignment.center,
+      transform: canAnimate ? Matrix4.identity() : Matrix4.identity()
+        ..setEntry(3, 2, 0.002)
+        ..rotateY(currentAngleBack),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Transform.translate(
+            offset: const Offset(0, 10),
+            child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(10.0),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    widget.item.isAccount
+                        ? Text(
+                            'CUENTA',
+                            style: TextStyle(
+                              color: color,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        : Text(
+                            'COTIZACIÓN',
+                            style: TextStyle(
+                              color: color,
+                              fontSize: 20,
+                            ),
+                          ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Container(
+            width: constraints.maxWidth,
+            height: constraints.maxHeight - 40,
+            padding: const EdgeInsets.all(5.0),
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+            ),
+            child: Center(
+              child: Text(
+                widget.item.isAccount ? 'CUENTA' : 'COTIZACIÓN',
+                style: TextStyle(
+                  color: ColorPalete.white,
+                  fontFamily: fontFamily,
+                  fontSize: 30,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _front(BoxConstraints constraints) {
+    return Transform(
+      alignment: Alignment.center,
+      transform: canAnimate ? Matrix4.identity() : Matrix4.identity()
+        ..setEntry(3, 2, 0.002)
+        ..rotateY(currentAngle),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Transform.translate(
+                offset: const Offset(0, 10),
+                child: Container(
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(10.0),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        widget.item.isAccount
+                            ? Text(
+                                'CUENTA',
+                                style: TextStyle(
+                                  color: colorIcon,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              )
+                            : Text(
+                                'COTIZACIÓN',
+                                style: TextStyle(
+                                  color: colorIcon,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                width: constraints.maxWidth,
+                height: constraints.maxHeight - 40,
+                padding: const EdgeInsets.all(5.0),
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: const BorderRadius.only(
+                    topRight: Radius.circular(20),
+                    bottomLeft: Radius.circular(20),
+                    bottomRight: Radius.circular(20),
+                  ),
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: ColorPalete.white,
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  padding: const EdgeInsets.all(10.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(FontAwesomeIcons.circleInfo,
+                              size: 40, color: foreground),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Name
+                                  Row(
+                                    children: [
+                                      Text(
+                                        widget.item.name,
+                                        style: TextStyle(
+                                          color: foreground,
+                                          fontSize: 30,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  // Description
+                                  Text(
+                                    widget.item.description,
+                                    style: TextStyle(
+                                      color: foreground,
+                                      fontSize: 18,
+                                    ),
+                                    maxLines: 2,
+                                  ),
+                                ]),
+                          ),
+                        ],
                       ),
-                    )
-                  : Container(),
+                      // Total
+                      Row(
+                        children: [
+                          Icon(FontAwesomeIcons.commentDollar,
+                              size: 40, color: foreground),
+                          const SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "${CurrencyUtility.doubleToCurrency(widget.item.total)} COP",
+                                style: TextStyle(
+                                  color: foreground,
+                                  fontSize: 25,
+                                ),
+                              ),
+                              if (widget.item.tax is double)
+                                Text(
+                                  "IVA incluido",
+                                  style: TextStyle(
+                                    color: foreground,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
-        ),
+          if (widget.item.finished) _brushstrokeTag(),
+        ],
       ),
     );
   }
 
-  Widget _info(Color fg) {
-    var value = widget.cotization.total;
-    var total = (1 + (widget.cotization.tax ?? 0.0)) * value;
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          widget.cotization.name,
-          style: TextStyle(
-            color: fg,
-            fontSize: 20.0,
-          ),
-          maxLines: 2,
-          textAlign: TextAlign.center,
-        ),
-        Text(
-          widget.cotization.description,
-          style: TextStyle(
-            color: fg,
-            fontSize: 15.0,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        Text(
-          CurrencyUtility.doubleToCurrency(total),
-          style: TextStyle(
-            color: fg,
-            fontSize: 15.0,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _dialogFinish() async {
-    bool? res = await showDialog(
-      context: context,
-      builder: ((context) {
-        return FinishDialog(
-          title: "Desea eliminar la cotization?",
-          selectedColor: Color(widget.cotization.color),
-        );
-      }),
-    );
-
-    if (res is bool && res) {
-      bloc.deleteCotization(widget.cotization);
-    } else {
-      bloc.resetState();
-    }
-  }
-}
-
-enum PopupMenuAction {
-  edit,
-  delete,
-  finish,
-  copy,
-  visualize,
-}
-
-class PopupMenu extends PopupMenuEntry<PopupMenuAction> {
-  final bool isFinished;
-  const PopupMenu({super.key, required this.isFinished});
-
-  @override
-  State<PopupMenu> createState() => _PopupMenuState();
-
-  @override
-  // TODO: implement height
-  double get height => 100;
-
-  @override
-  bool represents(PopupMenuAction? value) {
-    return true;
-  }
-}
-
-class _PopupMenuState extends State<PopupMenu> {
-  void onDelete() {
-    Navigator.of(context).pop(PopupMenuAction.delete);
-  }
-
-  void onEdit() {
-    Navigator.of(context).pop(PopupMenuAction.edit);
-  }
-
-  void onFinish() {
-    Navigator.of(context).pop(PopupMenuAction.finish);
-  }
-
-  void onCopy() {
-    Navigator.of(context).pop(PopupMenuAction.copy);
-  }
-
-  void onVisualize() {
-    Navigator.of(context).pop(PopupMenuAction.visualize);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    var children = <Widget>[
-      TextButton(
-        onPressed: onCopy,
-        child: const Text(
-          "Copiar",
-        ),
-      ),
-    ];
-    if (widget.isFinished) {
-      children.addAll([
-        TextButton(
-          onPressed: onDelete,
-          child: const Text(
-            "Eliminar",
-          ),
-        ),
-        TextButton(
-          onPressed: onVisualize,
-          child: const Text(
-            "Visualizar",
-          ),
-        ),
-      ]);
-    } else {
-      children = [
-        TextButton(
-          onPressed: onDelete,
-          child: const Text(
-            "Descartar",
-          ),
-        ),
-        TextButton(
-          onPressed: onEdit,
-          child: const Text(
-            "Editar",
-          ),
-        ),
-        TextButton(
-          onPressed: onFinish,
-          child: const Text(
-            "Entregar",
-          ),
-        ),
-      ];
-    }
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: children,
-    );
+  Widget _brushstrokeTag() {
+    return TweenAnimationBuilder(
+        tween: widget.isUpdated
+            ? Tween(begin: 0.0, end: 1.0)
+            : Tween(begin: 1.0, end: 1.0),
+        duration: const Duration(milliseconds: 1000),
+        builder: (context, value, _) {
+          return Opacity(
+            opacity: value,
+            child: Align(
+              alignment: const FractionalOffset(1.25, .25),
+              child: Transform.rotate(
+                angle: lerpDouble(1, 0.5, value)!,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/img/brushstroke.png'),
+                    ),
+                  ),
+                  width: 200,
+                  height: 50,
+                  child: Center(
+                    child: Text(
+                      "ENTREGADO",
+                      style: TextStyle(
+                        color: ColorPalete.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        });
   }
 }

@@ -52,8 +52,10 @@ class Cotization extends Equatable {
 
   int get amountItems => items.length;
 
-  double get total => items.fold(
-      0.0, (previousValue, element) => previousValue + element.total);
+  double get total =>
+      items.fold(
+          0.0, (previousValue, element) => previousValue + element.total) *
+      (1 + (tax ?? 0));
 
   @override
   List<Object?> get props => [

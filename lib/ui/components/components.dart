@@ -7,6 +7,7 @@ export 'custom_textfield.component.dart';
 export 'header.component.dart';
 export 'heading_page.component.dart';
 export 'order_tag.dart';
+export 'perspective_list_view.dart';
 export 'primary_button.component.dart';
 export 'profile_image_picker/cubit/profile_image_picker_cubit.dart';
 export 'profile_image_picker/profile_image_picker.dart';

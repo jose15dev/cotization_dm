@@ -1,3 +1,3 @@
-export 'cotization_history_page/cotization_history_page.dart';
-export 'initial_cotization_page.dart';
-export 'form_cotization_page/create_cotization_page.dart';
+export 'cotization_history_page.dart';
+export 'create_cotization_page.dart';
+export 'details_cotization_page.dart';

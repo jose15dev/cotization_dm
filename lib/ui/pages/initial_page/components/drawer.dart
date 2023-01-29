@@ -67,6 +67,13 @@ class CustomDrawer extends StatelessWidget {
                     onTap: () => BlocProvider.of<FetchEmployeeCubit>(context)
                         .onCreateEmployee(),
                   ),
+                  DrawerBasicOption(
+                    title: "Nueva Cotization",
+                    icon: Icons.add,
+                    activeIcon: Icons.add,
+                    onTap: () => BlocProvider.of<FetchCotizationCubit>(context)
+                        .onCreateCotization(),
+                  ),
                 ],
               )
             ],

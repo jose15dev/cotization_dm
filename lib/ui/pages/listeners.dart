@@ -90,21 +90,13 @@ class _AppListenerState extends State<AppListener> {
                   .then(_popOnSave);
             }
 
-            if (state is OnShowCotization) {
-              Navigator.of(context)
-                  .push(
-                    fadeTransition(
-                      CreateCotizationPage(
-                        cotization: state.cotization,
-                        onCopy: false,
-                        onlyShow: true,
-                      ),
-                    ),
-                  )
-                  .then(_popOnSave);
+            if (state is OnActionCotizationFailed) {
+              print(state.message);
+              snackbarBloc.add(ErrorSnackbarEvent(state.message));
             }
 
-            if (state is OnActionCotizationSuccess) {
+            if (state is FetchCotizationInitial ||
+                state is OnActionCotizationSuccess) {
               cotizationBloc.fetchCotizations();
             }
           },

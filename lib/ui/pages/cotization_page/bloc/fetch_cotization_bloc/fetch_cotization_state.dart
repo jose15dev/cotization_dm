@@ -15,7 +15,11 @@ abstract class FetchCotizationFailed extends FetchCotizationState {
   const FetchCotizationFailed(this.message);
 }
 
-class OnFetchCotizationSuccess extends FetchCotizationState {}
+class OnFetchCotizationSuccess extends FetchCotizationState {
+  final List<Cotization> cotizations;
+
+  const OnFetchCotizationSuccess(this.cotizations);
+}
 
 class OnFetchCotizationEmpty extends FetchCotizationState {}
 
@@ -27,7 +31,11 @@ class OnActionCotizationFailed extends FetchCotizationFailed {
 
 class OnActionCotizationLoading extends FetchCotizationState {}
 
-class OnActionCotizationSuccess extends FetchCotizationState {}
+class OnActionCotizationSuccess extends FetchCotizationState {
+  final Cotization? cotization;
+
+  const OnActionCotizationSuccess([this.cotization]);
+}
 
 class OnCreateCotization extends FetchCotizationState {}
 

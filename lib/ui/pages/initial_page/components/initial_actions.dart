@@ -17,17 +17,6 @@ class InitialActions extends StatelessWidget {
             width: width / 3,
             padding: const EdgeInsets.all(8.0),
             child: OptionPage(
-              label: "Historial de Cotizaciones",
-              onTap: () => Navigator.of(context).push(
-                fadeTransition(const InitialCotizationPage()),
-              ),
-              icon: Icons.list_alt,
-            ),
-          ),
-          Container(
-            width: width / 3,
-            padding: const EdgeInsets.all(8.0),
-            child: OptionPage(
               label: "Pagos",
               icon: Icons.engineering_outlined,
               onTap: () => Navigator.of(context)

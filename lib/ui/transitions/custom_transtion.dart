@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-const duration = Duration(milliseconds: 500);
+const duration = Duration(milliseconds: 1000);
 PageRouteBuilder<T> fadeTransition<T>(Widget page) {
   return PageRouteBuilder<T>(
       pageBuilder: ((context, animation, secondaryAnimation) => page),
