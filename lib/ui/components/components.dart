@@ -1,4 +1,4 @@
-export 'bottom_bar.component.dart';
+export 'bottombar.dart';
 export 'card_payment_employee.component.dart';
 export 'color_picker.dart';
 export 'custom_dropdown.dart';

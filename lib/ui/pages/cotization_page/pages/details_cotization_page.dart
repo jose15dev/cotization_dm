@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:cotizacion_dm/core/domain/domain.dart';
 import 'package:cotizacion_dm/core/infrastructure/infrastructure.dart';
 import 'package:cotizacion_dm/globals.dart';
+import 'package:cotizacion_dm/ui/components/components.dart';
 import 'package:cotizacion_dm/ui/pages/pages.dart';
 import 'package:cotizacion_dm/ui/utilities/utilities.dart';
 import 'package:flutter/material.dart';
@@ -70,71 +71,71 @@ class _DetailsCotizationPageState extends State<DetailsCotizationPage>
         }
       },
       child: Scaffold(
-        body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10.0),
-          child: AnimatedBuilder(
-              animation: _controller,
-              builder: (context, _) {
-                return Stack(
-                  children: [
-                    SizedBox(
-                      width: double.infinity,
-                      height: MediaQuery.of(context).size.height,
-                      child: CustomScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        slivers: [
-                          SliverAppBar(
-                            pinned: true,
-                            backgroundColor: ColorPalete.white,
-                            actions: [
-                              IconButton(
-                                onPressed: () {
+        body: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, _) {
+              return Stack(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    height: MediaQuery.of(context).size.height,
+                    child: CustomScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      slivers: [
+                        SliverAppBar(
+                          pinned: true,
+                          backgroundColor: ColorPalete.white,
+                          actions: [
+                            Padding(
+                              padding: const EdgeInsets.only(right: 16.0),
+                              child: GestureDetector(
+                                onTap: () {
                                   _controller
                                     ..reset()
                                     ..forward().then((value) {
                                       Navigator.of(context).pop(_cotization);
                                     });
                                 },
-                                icon: const Icon(
+                                child: const Icon(
                                   FontAwesomeIcons.trash,
                                 ),
-                              )
-                            ],
-                          ),
-                          SliverToBoxAdapter(
-                            child: Center(
-                              child: Text(
-                                "Detalles",
-                                style: TextStyle(
-                                  fontFamily: fontFamily,
-                                  fontSize: 30.0,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                        SliverToBoxAdapter(
+                          child: Center(
+                            child: Text(
+                              "Detalles",
+                              style: TextStyle(
+                                fontFamily: fontFamily,
+                                fontSize: 30.0,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
-                          SliverPersistentHeader(
-                            pinned: true,
-                            delegate: _CustomDelegate(
-                              minHeight:
-                                  MediaQuery.of(context).size.height * 0.35,
-                              maxHeight:
-                                  MediaQuery.of(context).size.height * 0.35,
-                              child: Padding(
-                                padding: const EdgeInsets.all(10.0),
-                                child: Center(
-                                  child: Hero(
-                                    tag: "cotization-${_cotization.id}",
-                                    child: Opacity(
-                                      opacity: 1 - _moveCardAnimation.value,
-                                      child: _TransformCard(
-                                        movement: _moveCardAnimation.value,
-                                        rotation: _rotateCardAnimation.value,
-                                        child: AnimatedCardCotization(
-                                          _cotization,
-                                          isUpdated: _isUpdated,
-                                          isDetail: true,
-                                        ),
+                        ),
+                        SliverPersistentHeader(
+                          pinned: true,
+                          delegate: _CustomDelegate(
+                            minHeight:
+                                MediaQuery.of(context).size.height * 0.35,
+                            maxHeight:
+                                MediaQuery.of(context).size.height * 0.35,
+                            child: Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Center(
+                                child: Hero(
+                                  tag: "cotization-${_cotization.id}",
+                                  child: Opacity(
+                                    opacity: 1 - _moveCardAnimation.value,
+                                    child: _TransformCard(
+                                      movement: _moveCardAnimation.value,
+                                      rotation: _rotateCardAnimation.value,
+                                      child: AnimatedCardCotization(
+                                        _cotization,
+                                        isUpdated: _isUpdated,
+                                        isDetail: true,
                                       ),
                                     ),
                                   ),
@@ -142,35 +143,78 @@ class _DetailsCotizationPageState extends State<DetailsCotizationPage>
                               ),
                             ),
                           ),
-                          SliverToBoxAdapter(
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 8.0, bottom: 10.0),
-                              child: Text(
-                                'Servicios',
-                                style: TextStyle(
-                                  fontSize: 22.0,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey.shade700,
-                                ),
+                        ),
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.only(left: 8.0, bottom: 10.0),
+                            child: Text(
+                              'Servicios',
+                              style: TextStyle(
+                                fontSize: 22.0,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey.shade700,
                               ),
                             ),
                           ),
-                          SliverList(
-                              delegate:
-                                  SliverChildBuilderDelegate(((context, index) {
-                            var item = _cotization.items[index];
-                            return _CotizationItemWidget(item: item);
-                          }), childCount: _cotization.items.length)),
-                        ],
-                      ),
+                        ),
+                        SliverList(
+                            delegate:
+                                SliverChildBuilderDelegate(((context, index) {
+                          var item = _cotization.items[index];
+                          return _CotizationItemWidget(item: item);
+                        }), childCount: _cotization.items.length)),
+                      ],
                     ),
-                  ],
-                );
-              }),
-        ),
-        bottomNavigationBar: _CotizationActions(
-          cotization: _cotization,
+                  ),
+                ],
+              );
+            }),
+        bottomNavigationBar: GradientBottomBar(
+          actions: [
+            Expanded(
+              child: GradientAction(
+                onTap: () {
+                  bloc.exportToPDF(widget.cotization, getIt());
+                },
+                icon: FontAwesomeIcons.fileExport,
+                label: "Exportar a PDF",
+              ),
+            ),
+            if (!widget.cotization.finished)
+              Expanded(
+                child: GradientAction(
+                  onTap: () {
+                    bloc.onEditCotization(widget.cotization);
+                  },
+                  icon: FontAwesomeIcons.pencil,
+                  label: "Editar",
+                ),
+              ),
+            if (!widget.cotization.finished)
+              Expanded(
+                child: GradientAction(
+                  onTap: () {
+                    bloc.onFinishCotization(widget.cotization);
+                  },
+                  icon: FontAwesomeIcons.truck,
+                  label: "Entregar",
+                ),
+              ),
+            Expanded(
+              child: GradientAction(
+                onTap: () {
+                  bloc.onEditCotization(widget.cotization, true);
+                },
+                icon: FontAwesomeIcons.solidCopy,
+                label: "Duplicar",
+              ),
+            ),
+          ],
+          colors: [
+            ColorPalete.primary,
+            ColorPalete.secondary,
+          ],
         ),
       ),
     );
@@ -282,144 +326,6 @@ class _TransformCard extends StatelessWidget {
         ..rotateZ(math.pi / 4 * movement)
         ..scale(lerpDouble(1, 0.3, movement)!),
       child: child,
-    );
-  }
-}
-
-class _CotizationActions extends StatefulWidget {
-  final Cotization cotization;
-  const _CotizationActions({
-    Key? key,
-    required this.cotization,
-  }) : super(key: key);
-
-  @override
-  State<_CotizationActions> createState() => _CotizationActionsState();
-}
-
-class _CotizationActionsState extends State<_CotizationActions>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _backgroundController;
-  @override
-  void initState() {
-    super.initState();
-    _backgroundController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 5),
-    )
-      ..forward()
-      ..addListener(() {
-        if (_backgroundController.isCompleted) {
-          _backgroundController.repeat();
-        }
-      });
-  }
-
-  @override
-  void dispose() {
-    _backgroundController.dispose();
-    super.dispose();
-  }
-
-  FetchCotizationCubit get bloc => BlocProvider.of(context);
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-        animation: _backgroundController,
-        builder: (context, _) {
-          return Container(
-            height: kBottomNavigationBarHeight * 1.3,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                transform:
-                    GradientRotation(2 * math.pi * _backgroundController.value),
-                colors: [
-                  ColorPalete.primary,
-                  ColorPalete.secondary,
-                ],
-              ),
-            ),
-            child: Row(children: [
-              Expanded(
-                child: _CotizationAction(
-                  onTap: () {
-                    bloc.exportToPDF(widget.cotization, getIt());
-                  },
-                  icon: FontAwesomeIcons.fileExport,
-                  label: "Exportar a PDF",
-                ),
-              ),
-              if (!widget.cotization.finished)
-                Expanded(
-                  child: _CotizationAction(
-                    onTap: () {
-                      bloc.onEditCotization(widget.cotization);
-                    },
-                    icon: FontAwesomeIcons.pencil,
-                    label: "Editar",
-                  ),
-                ),
-              if (!widget.cotization.finished)
-                Expanded(
-                  child: _CotizationAction(
-                    onTap: () {
-                      bloc.onFinishCotization(widget.cotization);
-                    },
-                    icon: FontAwesomeIcons.truck,
-                    label: "Entregar",
-                  ),
-                ),
-              Expanded(
-                child: _CotizationAction(
-                  onTap: () {
-                    bloc.onEditCotization(widget.cotization, true);
-                  },
-                  icon: FontAwesomeIcons.solidCopy,
-                  label: "Duplicar",
-                ),
-              ),
-            ]),
-          );
-        });
-  }
-}
-
-class _CotizationAction extends StatelessWidget {
-  const _CotizationAction({
-    Key? key,
-    required this.label,
-    required this.icon,
-    required this.onTap,
-  }) : super(key: key);
-
-  final String label;
-  final IconData icon;
-  final VoidCallback onTap;
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            color: ColorPalete.white,
-          ),
-          const SizedBox(height: 5),
-          Text(
-            label,
-            style: TextStyle(
-              color: ColorPalete.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
     );
   }
 }
