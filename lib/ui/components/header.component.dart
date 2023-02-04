@@ -32,7 +32,7 @@ class Header extends StatelessWidget {
               SizedBox(
                 height: MediaQuery.of(context).size.height * 0.02,
               ),
-              PrimaryButton(
+              CustomButton(
                 "Cotizar",
                 onTap: onTap,
               )

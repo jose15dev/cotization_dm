@@ -174,7 +174,7 @@ class _DetailsCotizationPageState extends State<DetailsCotizationPage>
           actions: [
             Expanded(
               child: GradientAction(
-                onTap: () {
+                onTap: (details) {
                   bloc.exportToPDF(widget.cotization, getIt());
                 },
                 icon: FontAwesomeIcons.fileExport,
@@ -184,7 +184,7 @@ class _DetailsCotizationPageState extends State<DetailsCotizationPage>
             if (!widget.cotization.finished)
               Expanded(
                 child: GradientAction(
-                  onTap: () {
+                  onTap: (details) {
                     bloc.onEditCotization(widget.cotization);
                   },
                   icon: FontAwesomeIcons.pencil,
@@ -194,7 +194,7 @@ class _DetailsCotizationPageState extends State<DetailsCotizationPage>
             if (!widget.cotization.finished)
               Expanded(
                 child: GradientAction(
-                  onTap: () {
+                  onTap: (details) {
                     bloc.onFinishCotization(widget.cotization);
                   },
                   icon: FontAwesomeIcons.truck,
@@ -203,7 +203,7 @@ class _DetailsCotizationPageState extends State<DetailsCotizationPage>
               ),
             Expanded(
               child: GradientAction(
-                onTap: () {
+                onTap: (details) {
                   bloc.onEditCotization(widget.cotization, true);
                 },
                 icon: FontAwesomeIcons.solidCopy,

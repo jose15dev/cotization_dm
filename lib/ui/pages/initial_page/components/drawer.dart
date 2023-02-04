@@ -22,60 +22,27 @@ class CustomDrawer extends StatelessWidget {
             children: [
               DrawerHeader(
                 decoration: BoxDecoration(
-                  color: ColorPalete.primary,
+                  gradient: LinearGradient(
+                    colors: [
+                      ColorPalete.primary,
+                      ColorPalete.primary.withOpacity(0.5),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: ColorPalete.white,
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: const ArchitechIcon(
-                        size: 60,
-                      ),
+                child: Container(
+                  width: double.infinity,
+                  child: Text(
+                    titleApp,
+                    style: TextStyle(
+                      fontSize: 30,
+                      color: ColorPalete.white,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(
-                      width: 20.0,
-                    ),
-                    Text(
-                      titleApp,
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: ColorPalete.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-              Column(
-                children: [
-                  DrawerBasicOption(
-                    title: "Principal",
-                    icon: Icons.home_outlined,
-                    activeIcon: Icons.home,
-                    onTap: () => Navigator.pushNamedAndRemoveUntil(
-                        context, "/", (route) => false),
-                    active: ModalRoute.of(context)?.settings.name == "/",
-                  ),
-                  DrawerBasicOption(
-                    title: "Nuevo Trabajador",
-                    icon: Icons.person_add_outlined,
-                    activeIcon: Icons.home,
-                    onTap: () => BlocProvider.of<FetchEmployeeCubit>(context)
-                        .onCreateEmployee(),
-                  ),
-                  DrawerBasicOption(
-                    title: "Nueva Cotization",
-                    icon: Icons.add,
-                    activeIcon: Icons.add,
-                    onTap: () => BlocProvider.of<FetchCotizationCubit>(context)
-                        .onCreateCotization(),
-                  ),
-                ],
-              )
             ],
           ),
           Column(

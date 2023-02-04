@@ -1,12 +1,9 @@
 import 'dart:ui';
 
 import 'package:cotizacion_dm/core/domain/domain.dart';
-import 'package:cotizacion_dm/ui/components/components.dart';
-import 'package:cotizacion_dm/ui/pages/liquidation_page/bloc/bloc.dart';
 import 'package:cotizacion_dm/ui/pages/pages.dart';
 import 'package:cotizacion_dm/ui/utilities/utilities.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CreateLiquidationPage extends StatelessWidget {
@@ -200,8 +197,6 @@ class _CreateLiquidationViewState extends State<CreateLiquidationView> {
                       ? Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            EmployeeAvatar(snapshot.data!.image,
-                                id: snapshot.data!.id ?? 0),
                             Text(
                               snapshot.data!.firstname,
                               style: TextStyle(

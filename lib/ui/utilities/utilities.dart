@@ -4,6 +4,7 @@ export 'delay.utility.dart';
 export 'image_filter.utility.dart';
 export 'page.utility.dart';
 export 'phone_number.utility.dart';
+export 'pick_image.utility.dart';
 export 'ramdom_name.utility.dart';
 export 'snackbar.utility.dart';
 export 'theme_utility.dart';

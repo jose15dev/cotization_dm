@@ -1,4 +1,4 @@
-import 'package:cotizacion_dm/ui/components/bottom_bar.component.dart';
+import 'package:cotizacion_dm/ui/components/bottombar.dart';
 import 'package:cotizacion_dm/ui/pages/liquidation_page/bloc/fetch_liquidations/fetch_liquidations_cubit.dart';
 import 'package:cotizacion_dm/ui/styled/loading_indicator.dart';
 import 'package:cotizacion_dm/ui/styled/styled.dart';

@@ -50,7 +50,7 @@ class BlockScreenPage extends StatelessWidget {
                             child: SizedBox(
                               height: 60,
                               width: 300,
-                              child: PrimaryButton(
+                              child: CustomButton(
                                 "Iniciar",
                                 onTap: () => Navigator.of(context)
                                     .pushNamedAndRemoveUntil(
@@ -64,7 +64,7 @@ class BlockScreenPage extends StatelessWidget {
                             child: SizedBox(
                               height: 60,
                               width: 300,
-                              child: PrimaryButton(
+                              child: CustomButton(
                                 "Ir a preferencias",
                                 bordered: true,
                                 textOnly: true,

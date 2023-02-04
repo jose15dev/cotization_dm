@@ -26,3 +26,7 @@ class OnWhatsappChatSuccess extends EmployeeDetailsState {}
 class OnGetLiquidationsEmpty extends EmployeeDetailsState {}
 
 class OnGetLiquidationsSuccess extends EmployeeDetailsState {}
+
+class OnDeleteAnimationCard extends EmployeeDetailsState {}
+
+class OnDeleteAnimationTrash extends EmployeeDetailsState {}

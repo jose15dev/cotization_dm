@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
 class RotateBackground extends StatefulWidget {
-  final Widget child;
+  final Widget? child;
   final double padding, radius;
+  final List<Color> colors;
   const RotateBackground(
-      {required this.child,
+      {this.child,
       super.key,
       required this.padding,
-      required this.radius});
+      required this.radius,
+      this.colors = const []});
 
   @override
   State<RotateBackground> createState() => _RotateBackgroundState();
@@ -45,10 +47,12 @@ class _RotateBackgroundState extends State<RotateBackground>
               borderRadius: BorderRadius.circular(widget.radius),
               gradient: LinearGradient(
                 transform: GradientRotation(_controller.value * 2 * math.pi),
-                colors: [
-                  ColorPalete.primary,
-                  ColorPalete.secondary,
-                ],
+                colors: widget.colors.isEmpty
+                    ? [
+                        ColorPalete.primary,
+                        ColorPalete.secondary,
+                      ]
+                    : widget.colors,
               ),
             ),
             child: widget.child,

@@ -3,25 +3,16 @@ import 'package:cotizacion_dm/core/domain/domain.dart';
 import 'package:cotizacion_dm/core/infrastructure/infrastructure.dart';
 import 'package:cotizacion_dm/ui/utilities/utilities.dart';
 import 'package:equatable/equatable.dart';
-import 'package:rxdart/rxdart.dart';
+import 'package:flutter/material.dart';
 
 part 'fetch_employee_state.dart';
 
 class FetchEmployeeCubit extends Cubit<FetchEmployeeState> {
   final EmployeeService _service;
   final SharedPreferencesCacheEmployeeService _cacheService;
-  final _employeesCtrl = BehaviorSubject<List<Employee>>();
-
-  Stream<List<Employee>> get employeesStream => _employeesCtrl.stream;
 
   FetchEmployeeCubit(this._service, this._cacheService)
-      : super(FetchEmployeeInitial()) {
-    _employeesCtrl.listen((value) => _cacheService.setEmployees(value));
-  }
-  void onEditEmployee(Employee employee) {
-    emit(FetchEmployeeOnEdit(employee));
-    emit(FetchEmployeeInitial());
-  }
+      : super(FetchEmployeeInitial());
 
   void resetState() {
     emit(FetchEmployeeInitial());
@@ -29,7 +20,7 @@ class FetchEmployeeCubit extends Cubit<FetchEmployeeState> {
 
   Future<List<Employee>> reloadEmployees() async {
     var records = (await _service.all()).toList();
-    _employeesCtrl.add(records);
+    _cacheService.setEmployees(records);
     return records;
   }
 
@@ -40,15 +31,12 @@ class FetchEmployeeCubit extends Cubit<FetchEmployeeState> {
         emit(OnFetchEmployeeLoading());
         await DelayUtility.delay();
         records = await reloadEmployees();
-      } else {
-        _employeesCtrl.add(records);
       }
-
       if (records.isEmpty) {
         emit(OnFetchEmployeeEmpty());
       }
       if (records.isNotEmpty) {
-        emit(OnFetchEmployeeSuccess());
+        emit(OnFetchEmployeeSuccess(records));
       }
     } catch (e) {
       emit(OnActionEmployeeFailed(e.toString()));
@@ -81,13 +69,5 @@ class FetchEmployeeCubit extends Cubit<FetchEmployeeState> {
     } catch (e) {
       emit(OnActionEmployeeFailed(e.toString()));
     }
-  }
-
-  void onShowEmployeeDetails(Employee employee) {
-    emit(FetchEmployeeOnShow(employee));
-  }
-
-  void onCreateEmployee() {
-    emit(FetchEmployeeOnCreate());
   }
 }

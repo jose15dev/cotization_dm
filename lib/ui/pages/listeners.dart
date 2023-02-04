@@ -109,20 +109,7 @@ class _AppListenerState extends State<AppListener> {
 
             if (state is OnActionEmployeeSuccess ||
                 state is FetchEmployeeInitial) {
-              BlocProvider.of<FetchEmployeeCubit>(context).fetchEmployees();
-            }
-            if (state is FetchEmployeeOnEdit) {
-              dialogEmployeeForm(context, state.employee);
-            }
-
-            if (state is FetchEmployeeOnCreate) {
-              dialogEmployeeForm(context);
-            }
-
-            if (state is FetchEmployeeOnShow) {
-              Navigator.of(context)
-                  .push(fadeTransition(EmployeeDetailsPage(state.employee)))
-                  .then((value) => employeeBloc.resetState());
+              employeeBloc.fetchEmployees();
             }
           },
         ),

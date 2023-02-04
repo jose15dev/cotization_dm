@@ -23,6 +23,8 @@ class EmployeeDetailsCubit extends Cubit<EmployeeDetailsState> {
   EmployeeDetailsCubit(this.employee, this._service)
       : super(EmployeeDetailsInitial());
 
+  void resetState() => emit(EmployeeDetailsInitial());
+
   void onCall() async {
     try {
       emit(OnCallLoading());
@@ -63,6 +65,14 @@ class EmployeeDetailsCubit extends Cubit<EmployeeDetailsState> {
     } catch (e) {
       emit(OnActionFailed(e.toString()));
     }
+  }
+
+  void onDeleteAnimation() {
+    emit(OnDeleteAnimationCard());
+  }
+
+  void animateTrash() {
+    emit(OnDeleteAnimationTrash());
   }
 
   Stream<bool> get hasLiquidations =>

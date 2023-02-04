@@ -11,98 +11,26 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../bloc/form_employee_bloc/contact.dart';
 
-void dialogEmployeeForm(BuildContext context, [Employee? editItem]) {
-  showGeneralDialog<Employee?>(
-    context: context,
-    barrierDismissible: true,
-    barrierLabel: "Label",
-    barrierColor: ColorPalete.black.withOpacity(0.5),
-    transitionDuration: const Duration(milliseconds: 700),
-    transitionBuilder: (context, animation, secondaryAnimation, child) {
-      var scaleAnimation = CurveTween(
-        curve: Interval(
-          0.5,
-          1.0,
-          curve: Curves.easeOut,
-        ),
-      ).animate(animation);
-      var translateAnimation = CurveTween(
-        curve: Interval(
-          0.0,
-          0.5,
-          curve: Curves.easeOut,
-        ),
-      ).animate(animation);
-
-      return AnimatedBuilder(
-          animation: animation,
-          builder: (context, _) {
-            return Transform(
-              alignment: FractionalOffset.topCenter,
-              transform: Matrix4.translationValues(
-                  0.0, translateAnimation.value * 100, 0.0)
-                ..scale(scaleAnimation.value),
-              child: child,
-            );
-          });
-    },
-    pageBuilder: (context, animation, secondaryAnimation) {
-      return Align(
-          alignment: FractionalOffset.topCenter,
-          child: FormEmployeeDialog(editItem));
-    },
-  ).then((employee) {
-    if (employee is Employee) {
-      BlocProvider.of<FetchEmployeeCubit>(context).saveEmployee(employee);
-    } else {
-      BlocProvider.of<FetchEmployeeCubit>(context).resetState();
-    }
-  });
-}
-
-class FormEmployeeDialog extends StatelessWidget {
-  final Employee? employee;
-  const FormEmployeeDialog(this.employee, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: MediaQuery.of(context).size.height * 0.8,
-      child: Container(
-        margin: const EdgeInsets.only(top: 30.0, right: 24, left: 24),
-        child: BlocProvider(
-          create: (context) => FormEmployeeCubit(),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20.0),
-            child: Material(
-              color: ColorPalete.white,
-              child: EmployeeFormInfo(employee),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class EmployeeFormInfo extends StatefulWidget {
   final Employee? employee;
-  const EmployeeFormInfo(
-    this.employee, {
-    Key? key,
-  }) : super(key: key);
+  final List<Color> colors;
+  final bool withImagePicker;
+  const EmployeeFormInfo(this.employee,
+      {Key? key, required this.withImagePicker, this.colors = const []})
+      : super(key: key);
 
   @override
   State<EmployeeFormInfo> createState() => _EmployeeFormInfoState();
 }
 
 class _EmployeeFormInfoState extends State<EmployeeFormInfo> {
-  late ProfileImagePickerCubit imageBloc;
   FormEmployeeCubit get formBloc => BlocProvider.of(context);
   late TextEditingController firstnameCtrl, lastnameCtrl, phoneCtrl, salaryCtrl;
 
   SnackbarBloc get snackbarBloc => BlocProvider.of(context);
+  late Color _foreground;
+  late List<Color> _colors;
+  late Uint8List? _image;
 
   @override
   void initState() {
@@ -118,13 +46,18 @@ class _EmployeeFormInfoState extends State<EmployeeFormInfo> {
     if (widget.employee is Employee) {
       formBloc.onUpdateEmployee(widget.employee!);
     }
+
+    _foreground =
+        widget.colors.isNotEmpty ? widget.colors[0] : ColorPalete.primary;
+    _colors = widget.colors;
+    _image = widget.employee?.image;
   }
 
   @override
   Widget build(BuildContext context) {
     final CurrencyTextInputFormatter formatter = CurrencyTextInputFormatter(
       symbol: "\$",
-      decimalDigits: 1,
+      decimalDigits: 0,
     );
 
     return BlocListener<FormEmployeeCubit, FormEmployeeState>(
@@ -161,22 +94,33 @@ class _EmployeeFormInfoState extends State<EmployeeFormInfo> {
               state.image);
         }
       },
-      child: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: _imagePicker(),
+      child: SizedBox(
+        width: MediaQuery.of(context).size.width * .8,
+        child: BlocProvider(
+          create: (context) => FormEmployeeCubit(),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20.0),
+            child: Material(
+              color: ColorPalete.white,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  if (widget.withImagePicker) _imagePicker(),
+                  _form(formatter),
+                  _actions(),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  _contactAction(),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                ],
+              ),
+            ),
           ),
-          SliverToBoxAdapter(
-            child: _form(formatter),
-          ),
-          SliverToBoxAdapter(
-            child: _actions(),
-          ),
-          spacer,
-          SliverToBoxAdapter(
-            child: _contactAction(),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -190,8 +134,9 @@ class _EmployeeFormInfoState extends State<EmployeeFormInfo> {
         }
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: PrimaryButton(
+          child: CustomButton(
             "Usar contacto del telefono",
+            foreground: _foreground,
             fontSize: 18,
             textOnly: true,
             bordered: true,
@@ -210,7 +155,11 @@ class _EmployeeFormInfoState extends State<EmployeeFormInfo> {
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               if (snapshot.data!) {
-                return PrimaryButton("Guardar", onTap: formBloc.saveInfo);
+                return CustomButton(
+                  "Guardar",
+                  onTap: formBloc.saveInfo,
+                  gradientColors: _colors,
+                );
               }
             }
             return Container();
@@ -222,16 +171,45 @@ class _EmployeeFormInfoState extends State<EmployeeFormInfo> {
     return SizedBox(
       width: double.infinity,
       height: 200,
-      child: ProfileImagePicker(
-        onChange: formBloc.updateImage,
-        controller: ((p0) {
-          var image = widget.employee?.image;
-          if (image is Uint8List) {
-            p0.loadImage(image);
-          }
-
-          imageBloc = p0;
-        }),
+      child: InkWell(
+        onTapDown: (details) async {
+          var result = (await dialogScale<ResultImagePicker>(
+                  context, details.globalPosition, const SelectImageMenu())) ??
+              ResultImagePicker();
+          setState(() {
+            if (result.remove) {
+              _image = null;
+            } else {
+              _image = result.image;
+              if (_image is Uint8List) formBloc.updateImage(_image!);
+            }
+          });
+        },
+        child: Ink(
+          width: double.infinity,
+          height: 100,
+          decoration: BoxDecoration(
+            color: _foreground.withOpacity(0.2),
+          ),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Align(
+                alignment: FractionalOffset.center,
+                child: Icon(
+                  Icons.image,
+                  size: 100,
+                  color: _foreground,
+                ),
+              ),
+              if (_image is Uint8List)
+                Image.memory(
+                  _image!,
+                  fit: BoxFit.cover,
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -246,7 +224,9 @@ class _EmployeeFormInfoState extends State<EmployeeFormInfo> {
             label: "Nombres",
             align: TextAlign.start,
             filled: true,
+            enableError: true,
             fontSize: fontSize,
+            foreground: _foreground,
             stream: formBloc.firstnameStream,
             controller: firstnameCtrl,
             type: TextInputType.name,
@@ -255,9 +235,11 @@ class _EmployeeFormInfoState extends State<EmployeeFormInfo> {
           CustomTextfield(
             label: "Apellidos",
             fontSize: fontSize,
+            foreground: _foreground,
             align: TextAlign.start,
             filled: true,
             stream: formBloc.lastnameStream,
+            enableError: true,
             controller: lastnameCtrl,
             type: TextInputType.name,
             onChanged: formBloc.updateLastname,
@@ -265,11 +247,13 @@ class _EmployeeFormInfoState extends State<EmployeeFormInfo> {
           CustomTextfield(
             label: "Telefono",
             fontSize: fontSize,
+            foreground: _foreground,
             align: TextAlign.start,
             filled: true,
             controller: phoneCtrl,
             stream: formBloc.phoneStream,
             type: TextInputType.phone,
+            enableError: true,
             formatters: [
               PhoneInputFormatter(),
             ],
@@ -278,7 +262,9 @@ class _EmployeeFormInfoState extends State<EmployeeFormInfo> {
           CustomTextfield(
             controller: salaryCtrl,
             fontSize: fontSize,
+            foreground: _foreground,
             label: "Salario diario",
+            enableError: true,
             align: TextAlign.start,
             filled: true,
             type: TextInputType.number,
@@ -303,14 +289,13 @@ class _EmployeeFormInfoState extends State<EmployeeFormInfo> {
       phoneCtrl = TextEditingController(text: phone);
       salaryCtrl = TextEditingController(text: salary);
     });
-    if (image is Uint8List) {
-      imageBloc.loadImage(image);
-    }
   }
 
   void clearFields() {
     loadFields("", "", "", "");
-    imageBloc.resetImage();
+    setState(() {
+      _image = null;
+    });
   }
 
   void _contactDialog() async {

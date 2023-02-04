@@ -15,6 +15,7 @@ class CustomTextfield extends StatelessWidget {
   final bool filled;
   final bool readOnly;
   final String value;
+  final bool enableError;
 
   const CustomTextfield({
     Key? key,
@@ -30,6 +31,7 @@ class CustomTextfield extends StatelessWidget {
     this.filled = false,
     this.readOnly = false,
     this.value = "",
+    this.enableError = false,
   }) : super(key: key);
 
   @override
@@ -38,18 +40,19 @@ class CustomTextfield extends StatelessWidget {
     return StreamBuilder<String>(
         stream: stream,
         builder: (context, snapshot) {
-          bool isError = snapshot.error != null;
+          bool hasError = snapshot.error != null;
+          Color currentColor = hasError ? ColorPalete.error : color;
           return Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: TextField(
               readOnly: readOnly,
-              cursorColor: color,
+              cursorColor: currentColor,
               onChanged: onChanged,
               controller:
                   readOnly ? TextEditingController(text: value) : controller,
               textAlign: align,
               style: TextStyle(
-                color: isError ? ColorPalete.error : color,
+                color: currentColor,
                 fontSize: fontSize,
               ),
               keyboardType: type,
@@ -58,13 +61,14 @@ class CustomTextfield extends StatelessWidget {
                   floatingLabelBehavior: FloatingLabelBehavior.never,
                   hintText: label,
                   border: InputBorder.none,
+                  errorText: enableError ? snapshot.error?.toString() : null,
                   errorStyle: TextStyle(
-                    fontSize: fontSize,
+                    fontSize: fontSize - 6,
                     color: ColorPalete.error,
                     fontWeight: FontWeight.bold,
                   ),
                   hintStyle: TextStyle(
-                    color: foreground?.withOpacity(0.8) ?? Colors.grey.shade600,
+                    color: currentColor.withOpacity(0.8),
                   ),
                   filled: filled),
             ),

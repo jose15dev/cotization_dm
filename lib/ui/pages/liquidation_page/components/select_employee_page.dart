@@ -96,25 +96,27 @@ class _SelectEmployeeViewState extends State<SelectEmployeeView> {
             child: MessageInfo(
               "No hay trabajadores.\n Presione para añadir",
               icon: Icons.person_add,
-              onTap: employeeBloc.onCreateEmployee,
+              onTap: () {},
             ),
           );
         }
-        return StreamBuilder<List<Employee>>(
-          stream: employeeBloc.employeesStream,
-          initialData: const [],
-          builder: (BuildContext context, snapshot) {
-            return ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemBuilder: (context, index) {
-                var employee = snapshot.data![index];
-                return EmployeeListTile(employee: employee);
-              },
-              itemCount: snapshot.data!.length,
-            );
+        return BlocBuilder<FetchEmployeeCubit, FetchEmployeeState>(
+          builder: (context, state) {
+            if (state is OnFetchEmployeeSuccess) {
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemBuilder: (context, index) {
+                  var employee = state.employees[index];
+                  return EmployeeListTile(employee: employee);
+                },
+                itemCount: state.employees.length,
+              );
+            }
+            return const SizedBox.shrink();
           },
         );
+        ;
       },
     );
   }
@@ -133,7 +135,7 @@ class EmployeeListTile extends StatelessWidget {
     return ListTile(
       onTap: () => Navigator.of(context).pop(employee),
       textColor: Colors.grey.shade600,
-      leading: EmployeeAvatar(employee.image, id: employee.id ?? 0),
+      // leading: EmployeeAvatar(employee.image, id: employee.id ?? 0),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

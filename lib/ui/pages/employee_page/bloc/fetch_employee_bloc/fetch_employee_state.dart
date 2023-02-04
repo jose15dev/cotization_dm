@@ -13,7 +13,11 @@ class OnFetchEmployeeLoading extends FetchEmployeeState {}
 
 class OnFetchEmployeeEmpty extends FetchEmployeeState {}
 
-class OnFetchEmployeeSuccess extends FetchEmployeeState {}
+class OnFetchEmployeeSuccess extends FetchEmployeeState {
+  final List<Employee> employees;
+
+  const OnFetchEmployeeSuccess(this.employees);
+}
 
 abstract class FetchEmployeeFailed extends FetchEmployeeState {
   final String message;
@@ -31,8 +35,9 @@ class OnActionEmployeeFailed extends FetchEmployeeFailed {
 
 class FetchEmployeeOnEdit extends FetchEmployeeState {
   final Employee employee;
+  final Offset offset;
 
-  const FetchEmployeeOnEdit(this.employee);
+  const FetchEmployeeOnEdit(this.employee, this.offset);
 }
 
 class FetchEmployeeOnShow extends FetchEmployeeState {
@@ -41,7 +46,11 @@ class FetchEmployeeOnShow extends FetchEmployeeState {
   const FetchEmployeeOnShow(this.employee);
 }
 
-class FetchEmployeeOnCreate extends FetchEmployeeState {}
+class FetchEmployeeOnCreate extends FetchEmployeeState {
+  final Offset offset;
+
+  const FetchEmployeeOnCreate(this.offset);
+}
 
 class OnUpdateEmployeeSuccess extends OnActionEmployeeSuccess {
   final Employee employee;

@@ -1,4 +1,4 @@
-export 'card_employee.component.dart';
+export 'card_employee.dart';
 export 'contact_banner.dart';
 export 'contact_button.dart';
 export 'employee_details_info.dart';
