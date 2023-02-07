@@ -36,7 +36,8 @@ class _AnimatedCardCotizationState extends State<AnimatedCardCotization>
 
   void _onDragEnd(DragEndDetails details) {
     _lastOffsetDy = _currentDraggingOffset.dy;
-    final animation = Tween<double>(begin: _lastOffsetDy, end: 0.0)
+    var endDraw = _lastOffsetDy > 90 ? 180.0 : 0.0;
+    final animation = Tween<double>(begin: _lastOffsetDy, end: endDraw)
         .animate(_animationController);
     animation.addListener(() {
       if (mounted) {
