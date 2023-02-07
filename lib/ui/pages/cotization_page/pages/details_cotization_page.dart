@@ -194,7 +194,6 @@ class _DetailsCotizationPageState extends State<DetailsCotizationPage>
                                       tag: "cotization-${_cotization.id}",
                                       child: AnimatedCardCotization(
                                         _cotization,
-                                        isUpdated: _isUpdated,
                                         isDetail: true,
                                       ),
                                     ),

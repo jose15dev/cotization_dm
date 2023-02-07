@@ -16,13 +16,12 @@ class AnimatedCardCotization extends StatefulWidget {
     this.item, {
     Key? key,
     this.isDetail = false,
-    this.isUpdated = false,
     this.color,
   }) : super(key: key);
 
   final Cotization item;
   final Color? color;
-  final bool isDetail, isUpdated;
+  final bool isDetail;
 
   @override
   State<AnimatedCardCotization> createState() => _AnimatedCardCotizationState();
@@ -327,44 +326,6 @@ class _AnimatedCardCotizationState extends State<AnimatedCardCotization>
         ],
       ),
     );
-  }
-
-  Widget _brushstrokeTag() {
-    return TweenAnimationBuilder(
-        tween: widget.isUpdated
-            ? Tween(begin: 0.0, end: 1.0)
-            : Tween(begin: 1.0, end: 1.0),
-        duration: const Duration(milliseconds: 1000),
-        builder: (context, value, _) {
-          return Opacity(
-            opacity: value,
-            child: Align(
-              alignment: const FractionalOffset(1.25, .25),
-              child: Transform.rotate(
-                angle: lerpDouble(1, 0.5, value)!,
-                child: Container(
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/img/brushstroke.png'),
-                    ),
-                  ),
-                  width: 200,
-                  height: 50,
-                  child: Center(
-                    child: Text(
-                      "ENTREGADO",
-                      style: TextStyle(
-                        color: ColorPalete.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        });
   }
 }
 
