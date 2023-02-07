@@ -394,37 +394,3 @@ class _CreateCotizationViewState extends State<CreateCotizationView>
         ));
   }
 }
-
-class _SliverChildPersistenHeader extends SliverPersistentHeaderDelegate {
-  final Widget child;
-  final double minHeight, maxHeight;
-  final Color? backgroundColor;
-
-  _SliverChildPersistenHeader(
-      {required this.child,
-      required this.minHeight,
-      required this.maxHeight,
-      this.backgroundColor});
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: backgroundColor,
-      child: child,
-    );
-  }
-
-  @override
-  // TODO: implement maxExtent
-  double get maxExtent => maxHeight;
-
-  @override
-  // TODO: implement minExtent
-  double get minExtent => minHeight;
-
-  @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
-    return false;
-  }
-}
