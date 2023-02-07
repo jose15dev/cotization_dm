@@ -288,8 +288,8 @@ class _CreateCotizationViewState extends State<CreateCotizationView>
                                   lastValue = snapshot.data;
                                 }
                                 if (lastValue is Cotization) {
-                                  return Hero(
-                                    tag: "cotization-${lastValue!.id}",
+                                  return NormalCotizationHero(
+                                    id: lastValue!.id,
                                     child: AnimatedCardCotization(
                                       lastValue!,
                                       isDetail: true,

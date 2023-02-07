@@ -3,8 +3,11 @@ import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cotizacion_dm/core/domain/domain.dart';
 import 'package:cotizacion_dm/globals.dart';
+import 'package:cotizacion_dm/shared/utilities/utilities.dart';
+import 'package:cotizacion_dm/ui/transitions/transitions.dart';
 import 'package:cotizacion_dm/ui/utilities/utilities.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'dart:math' as math;
@@ -16,12 +19,13 @@ class AnimatedCardCotization extends StatefulWidget {
     this.item, {
     Key? key,
     this.isDetail = false,
+    this.isQrCode = false,
     this.color,
   }) : super(key: key);
 
   final Cotization item;
   final Color? color;
-  final bool isDetail;
+  final bool isDetail, isQrCode;
 
   @override
   State<AnimatedCardCotization> createState() => _AnimatedCardCotizationState();
@@ -45,7 +49,6 @@ class _AnimatedCardCotizationState extends State<AnimatedCardCotization>
     } else {
       endDraw = -180.0;
     }
-    print(endDraw);
     ;
     final animation = Tween<double>(begin: _lastOffsetDy, end: endDraw)
         .animate(_animationController);
@@ -70,7 +73,6 @@ class _AnimatedCardCotizationState extends State<AnimatedCardCotization>
     if (_lastOffsetDy > 180) {
       _lastOffsetDy = 180.0;
     }
-    print(_lastOffsetDy);
     setState(() {
       _currentDraggingOffset = Offset(0.0, _lastOffsetDy);
     });
@@ -146,26 +148,21 @@ class _AnimatedCardCotizationState extends State<AnimatedCardCotization>
                   bottomRight: Radius.circular(20),
                 ),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  QrImage(
-                    data: widget.item.id.toString(),
-                    size: constraints.maxHeight * .4,
-                    foregroundColor: _coverForeground,
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text(
-                    widget.item.isAccount ? 'CUENTA' : 'COTIZACIÓN',
-                    style: TextStyle(
-                      color: _coverForeground,
-                      fontFamily: fontFamily,
-                      fontSize: 30,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 35.0, left: 20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.item.isAccount ? 'CUENTA' : 'COTIZACIÓN',
+                      style: TextStyle(
+                        color: _coverForeground,
+                        fontFamily: fontFamily,
+                        fontSize: 30,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -183,159 +180,214 @@ class _AnimatedCardCotizationState extends State<AnimatedCardCotization>
   }
 
   Widget _front(BoxConstraints constraints) {
+    var iconSize = constraints.maxWidth * 0.12;
+    var maxFontSize = constraints.maxWidth * 0.1;
+    var middleFontSize = constraints.maxWidth * 0.07;
+    var smallFontSize = constraints.maxWidth * 0.05;
+    var minFontSize = constraints.maxWidth * 0.045;
     return Transform(
       alignment: Alignment.center,
       transform: canAnimate ? Matrix4.identity() : Matrix4.identity()
         ..setEntry(3, 2, 0.002)
         ..rotateY(currentAngle),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Positioned.fill(
-            child: ClipPath(
-              clipper: _FolderClipper(
-                radius: 20.0,
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: _coverBackground,
+      child: RotatedBox(
+        quarterTurns: widget.isQrCode ? 1 : 0,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned.fill(
+              child: ClipPath(
+                clipper: _FolderClipper(
+                  radius: 20.0,
                 ),
-                padding: const EdgeInsets.only(
-                  left: 15.0,
-                  right: 15.0,
-                  top: 20.0,
-                  bottom: 15.0,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(FontAwesomeIcons.circleInfo,
-                            size: 40, color: _coverForeground),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: _coverBackground,
+                  ),
+                  padding: const EdgeInsets.only(
+                    left: 15.0,
+                    right: 15.0,
+                    top: 20.0,
+                    bottom: 15.0,
+                  ),
+                  child: !widget.isQrCode
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Row(
                               children: [
-                                // Name
-                                Row(
-                                  children: [
-                                    SizedBox(
-                                      width: constraints.maxWidth * .7,
-                                      child: AutoSizeText(
-                                        widget.item.name,
-                                        presetFontSizes: const [30, 25, 20],
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          color: _coverForeground,
-                                          fontWeight: FontWeight.bold,
+                                Icon(FontAwesomeIcons.circleInfo,
+                                    size: iconSize, color: _coverForeground),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        // Name
+                                        Row(
+                                          children: [
+                                            SizedBox(
+                                              width: constraints.maxWidth * .7,
+                                              child: AutoSizeText(
+                                                widget.item.name,
+                                                presetFontSizes: [
+                                                  maxFontSize,
+                                                  middleFontSize,
+                                                  smallFontSize,
+                                                ],
+                                                maxLines: 1,
+                                                style: TextStyle(
+                                                  color: _coverForeground,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
+                                        // Description
+                                        Text(
+                                          widget.item.description,
+                                          style: TextStyle(
+                                            color: _coverForeground,
+                                            fontSize: smallFontSize,
+                                          ),
+                                          maxLines: 2,
+                                        ),
+                                      ]),
+                                ),
+                              ],
+                            ),
+                            // Total
+                            Row(
+                              children: [
+                                Icon(FontAwesomeIcons.commentDollar,
+                                    size: iconSize, color: _coverForeground),
+                                const SizedBox(width: 10),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "${CurrencyUtility.doubleToCurrency(widget.item.total)} COP",
+                                      style: TextStyle(
+                                        color: _coverForeground,
+                                        fontSize: middleFontSize,
                                       ),
                                     ),
+                                    if (widget.item.tax is double)
+                                      Text(
+                                        "IVA incluido",
+                                        style: TextStyle(
+                                          color: _coverForeground,
+                                          fontSize: smallFontSize,
+                                        ),
+                                      ),
                                   ],
                                 ),
-                                // Description
-                                Text(
-                                  widget.item.description,
-                                  style: TextStyle(
-                                    color: _coverForeground,
-                                    fontSize: 18,
-                                  ),
-                                  maxLines: 2,
-                                ),
-                              ]),
-                        ),
-                      ],
-                    ),
-                    // Total
-                    Row(
-                      children: [
-                        Icon(FontAwesomeIcons.commentDollar,
-                            size: 40, color: _coverForeground),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "${CurrencyUtility.doubleToCurrency(widget.item.total)} COP",
-                              style: TextStyle(
-                                color: _coverForeground,
-                                fontSize: 25,
-                              ),
+                              ],
                             ),
-                            if (widget.item.tax is double)
-                              Text(
-                                "IVA incluido",
-                                style: TextStyle(
-                                  color: _coverForeground,
-                                  fontSize: 18,
-                                ),
+
+                            // Last update and Finish
+                            if (widget.item.finished == null &&
+                                widget.item.deletedAt == null)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    "Actualizado ${TimeAgoUtility.toTimeAgo(widget.item.updatedAt)}",
+                                    style: TextStyle(
+                                      color: _coverForeground,
+                                      fontSize: minFontSize,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            if (widget.item.finished != null &&
+                                widget.item.deletedAt == null)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    "Entregado ${TimeAgoUtility.toTimeAgo(widget.item.finished!)}",
+                                    style: TextStyle(
+                                      color: _coverForeground,
+                                      fontSize: minFontSize,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            if (widget.item.deletedAt != null)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    "Eliminado ${TimeAgoUtility.toTimeAgo(widget.item.deletedAt!)}",
+                                    style: TextStyle(
+                                      color: _coverForeground,
+                                      fontSize: minFontSize,
+                                    ),
+                                  ),
+                                ],
                               ),
                           ],
+                        )
+                      : Padding(
+                          padding:
+                              const EdgeInsets.only(top: 30.0, bottom: 20.0),
+                          child: Center(
+                            child: RotatedBox(
+                              quarterTurns: -1,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: ColorPalete.white,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    padding: const EdgeInsets.all(5),
+                                    child: QrImage(
+                                      eyeStyle: QrEyeStyle(
+                                        eyeShape: QrEyeShape.circle,
+                                        color: ColorPalete.black,
+                                      ),
+                                      gapless: false,
+                                      data: cotizationToJson(widget.item),
+                                      foregroundColor: ColorPalete.black,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  Text(
+                                    "Escanea el QR para copiar la informacion de la cotizacion",
+                                    style: TextStyle(
+                                      color: _coverForeground,
+                                      fontFamily: fontFamily,
+                                      fontSize: 16,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
-                      ],
-                    ),
-
-                    // Last update and Finish
-                    if (widget.item.finished == null &&
-                        widget.item.deletedAt == null)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            "Actualizado ${TimeAgoUtility.toTimeAgo(widget.item.updatedAt)}",
-                            style: TextStyle(
-                              color: _coverForeground,
-                              fontSize: 18,
-                            ),
-                          ),
-                        ],
-                      ),
-                    if (widget.item.finished != null &&
-                        widget.item.deletedAt == null)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            "Entregado ${TimeAgoUtility.toTimeAgo(widget.item.finished!)}",
-                            style: TextStyle(
-                              color: _coverForeground,
-                              fontSize: 18,
-                            ),
-                          ),
-                        ],
-                      ),
-                    if (widget.item.deletedAt != null)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            "Eliminado ${TimeAgoUtility.toTimeAgo(widget.item.deletedAt!)}",
-                            style: TextStyle(
-                              color: _coverForeground,
-                              fontSize: 18,
-                            ),
-                          ),
-                        ],
-                      ),
-                  ],
                 ),
               ),
             ),
-          ),
-          SizedBox(
-            width: constraints.maxWidth,
-            height: constraints.maxHeight - 40,
-            child: CustomPaint(
-              painter: _FolderBorderPainter(
-                color: _coverForeground,
+            SizedBox(
+              width: constraints.maxWidth,
+              height: constraints.maxHeight - 40,
+              child: CustomPaint(
+                painter: _FolderBorderPainter(
+                  color: _coverForeground,
+                ),
               ),
             ),
-          ),
-          // if (widget.item.finished is DateTime) _brushstrokeTag(),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -423,4 +475,15 @@ class _FolderBorderPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class NormalCotizationHero extends StatelessWidget {
+  final int? id;
+  final Widget child;
+  const NormalCotizationHero({super.key, this.id, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Hero(tag: "cotization-$id", child: child);
+  }
 }

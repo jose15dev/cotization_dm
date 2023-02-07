@@ -7,6 +7,7 @@ import 'package:cotizacion_dm/globals.dart';
 import 'package:cotizacion_dm/ui/components/components.dart';
 import 'package:cotizacion_dm/ui/components/select_menu.dart';
 import 'package:cotizacion_dm/ui/pages/pages.dart';
+import 'package:cotizacion_dm/ui/transitions/custom_transtion.dart';
 import 'package:cotizacion_dm/ui/utilities/utilities.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -31,7 +32,6 @@ class _DetailsCotizationPageState extends State<DetailsCotizationPage>
 
   // info
   late Cotization _cotization;
-  bool _isUpdated = false;
 
   @override
   void initState() {
@@ -66,11 +66,7 @@ class _DetailsCotizationPageState extends State<DetailsCotizationPage>
           if (state.cotization is Cotization) {
             setState(() {
               _cotization = state.cotization!;
-              _isUpdated = true;
             });
-            DelayUtility.custom(1).then((value) => setState(() {
-                  _isUpdated = false;
-                }));
           }
         }
       },
@@ -190,12 +186,17 @@ class _DetailsCotizationPageState extends State<DetailsCotizationPage>
                                     key: _cardkey,
                                     movement: _moveCardAnimation.value,
                                     rotation: _rotateCardAnimation.value,
-                                    child: Hero(
-                                      tag: "cotization-${_cotization.id}",
-                                      child: AnimatedCardCotization(
-                                        _cotization,
-                                        isDetail: true,
-                                      ),
+                                    child: Stack(
+                                      fit: StackFit.expand,
+                                      children: [
+                                        NormalCotizationHero(
+                                          id: _cotization.id,
+                                          child: AnimatedCardCotization(
+                                            _cotization,
+                                            isDetail: true,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
@@ -234,6 +235,19 @@ class _DetailsCotizationPageState extends State<DetailsCotizationPage>
             }),
         bottomNavigationBar: GradientBottomBar(
           actions: [
+            Expanded(
+              child: GradientAction(
+                onTap: (details) {
+                  Navigator.of(context).push(
+                    fadeTransition(
+                      QrCodeView(cotization: _cotization),
+                    ),
+                  );
+                },
+                icon: FontAwesomeIcons.qrcode,
+                label: "QR ",
+              ),
+            ),
             Expanded(
               child: GradientAction(
                 onTap: (details) {
