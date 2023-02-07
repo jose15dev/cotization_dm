@@ -36,7 +36,17 @@ class _AnimatedCardCotizationState extends State<AnimatedCardCotization>
 
   void _onDragEnd(DragEndDetails details) {
     _lastOffsetDy = _currentDraggingOffset.dy;
-    var endDraw = _lastOffsetDy > 90 ? 180.0 : 0.0;
+    late double endDraw;
+
+    if (_lastOffsetDy >= -90 && _lastOffsetDy <= 90) {
+      endDraw = 0.0;
+    } else if (_lastOffsetDy > 90) {
+      endDraw = 180.0;
+    } else {
+      endDraw = -180.0;
+    }
+    print(endDraw);
+    ;
     final animation = Tween<double>(begin: _lastOffsetDy, end: endDraw)
         .animate(_animationController);
     animation.addListener(() {
@@ -60,6 +70,7 @@ class _AnimatedCardCotizationState extends State<AnimatedCardCotization>
     if (_lastOffsetDy > 180) {
       _lastOffsetDy = 180.0;
     }
+    print(_lastOffsetDy);
     setState(() {
       _currentDraggingOffset = Offset(0.0, _lastOffsetDy);
     });
