@@ -2,10 +2,9 @@ import 'dart:ui';
 
 import 'package:cotizacion_dm/core/domain/domain.dart';
 import 'package:cotizacion_dm/ui/pages/pages.dart';
-import 'package:cotizacion_dm/ui/utilities/utilities.dart';
+import 'package:cotizacion_dm/ui/styled/loading_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 const radius = 70.0;
 
@@ -62,6 +61,9 @@ class _FetchEmployeeListState extends State<FetchEmployeeList> {
   Widget _employeeCardList() {
     return BlocBuilder<FetchEmployeeCubit, FetchEmployeeState>(
       builder: (context, state) {
+        if (state is OnFetchEmployeeLoading) {
+          return const Center(child: LoadingIndicator());
+        }
         if (state is OnFetchEmployeeSuccess) {
           return PageView.builder(
             clipBehavior: Clip.none,
