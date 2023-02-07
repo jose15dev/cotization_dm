@@ -16,6 +16,7 @@ class CustomTextfield extends StatelessWidget {
   final bool readOnly;
   final String value;
   final bool enableError;
+  final int maxLines;
 
   const CustomTextfield({
     Key? key,
@@ -32,6 +33,7 @@ class CustomTextfield extends StatelessWidget {
     this.readOnly = false,
     this.value = "",
     this.enableError = false,
+    this.maxLines = 1,
   }) : super(key: key);
 
   @override
@@ -44,33 +46,37 @@ class CustomTextfield extends StatelessWidget {
           Color currentColor = hasError ? ColorPalete.error : color;
           return Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
-            child: TextField(
-              readOnly: readOnly,
-              cursorColor: currentColor,
-              onChanged: onChanged,
-              controller:
-                  readOnly ? TextEditingController(text: value) : controller,
-              textAlign: align,
-              style: TextStyle(
-                color: currentColor,
-                fontSize: fontSize,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8.0),
+              child: TextField(
+                maxLines: maxLines,
+                readOnly: readOnly,
+                cursorColor: currentColor,
+                onChanged: onChanged,
+                controller:
+                    readOnly ? TextEditingController(text: value) : controller,
+                textAlign: align,
+                style: TextStyle(
+                  color: currentColor,
+                  fontSize: fontSize,
+                ),
+                keyboardType: type,
+                inputFormatters: formatters,
+                decoration: InputDecoration(
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
+                    hintText: label,
+                    border: InputBorder.none,
+                    errorText: enableError ? snapshot.error?.toString() : null,
+                    errorStyle: TextStyle(
+                      fontSize: fontSize - 6,
+                      color: ColorPalete.error,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    hintStyle: TextStyle(
+                      color: currentColor.withOpacity(0.8),
+                    ),
+                    filled: filled),
               ),
-              keyboardType: type,
-              inputFormatters: formatters,
-              decoration: InputDecoration(
-                  floatingLabelBehavior: FloatingLabelBehavior.never,
-                  hintText: label,
-                  border: InputBorder.none,
-                  errorText: enableError ? snapshot.error?.toString() : null,
-                  errorStyle: TextStyle(
-                    fontSize: fontSize - 6,
-                    color: ColorPalete.error,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  hintStyle: TextStyle(
-                    color: currentColor.withOpacity(0.8),
-                  ),
-                  filled: filled),
             ),
           );
         });

@@ -14,6 +14,7 @@ part 'routing.dart';
 
 class AppState extends StatelessWidget {
   CotizationService get cotizationService => getIt();
+  QueryCotizationService get queryCotizationService => getIt();
   SharedPreferencesCacheCotizationService get cacheCotizationService => getIt();
   EmployeeService get employeeService => getIt();
   SharedPreferencesCacheEmployeeService get cacheEmployeeService => getIt();
@@ -29,8 +30,8 @@ class AppState extends StatelessWidget {
         BlocProvider(create: (_) => SnackbarBloc()),
         // Features
         BlocProvider(
-            create: (_) => FetchCotizationCubit(
-                cotizationService, cacheCotizationService)),
+            create: (_) => FetchCotizationCubit(cotizationService,
+                cacheCotizationService, queryCotizationService)),
         BlocProvider(
             create: (_) =>
                 FetchEmployeeCubit(employeeService, cacheEmployeeService)),

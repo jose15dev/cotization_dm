@@ -8,6 +8,5 @@ abstract class CotizationRepository {
   Future<int> save(Cotization cotization);
 
   Future<int> delete(Cotization cotization);
-
   Future<int> update(Cotization cotization);
 }

@@ -28,8 +28,9 @@ class OnAddNewItem extends FormCotizationState {}
 class FormOnEditItem extends FormCotizationState {
   final CotizationItem item;
   final bool copy;
+  final Offset position;
 
-  const FormOnEditItem(this.item, {this.copy = false});
+  const FormOnEditItem(this.item, {this.copy = false, required this.position});
 }
 
 class ActionItemLoading extends FormCotizationState {}

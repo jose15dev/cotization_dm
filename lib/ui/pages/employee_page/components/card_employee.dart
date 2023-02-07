@@ -327,7 +327,7 @@ class _AnimatedEmployeeCardState extends State<AnimatedEmployeeCard>
 
   Future<void> _editImage(TapDownDetails details) async {
     var result = (await dialogScale<ResultImagePicker>(
-            context, details.globalPosition, const SelectImageMenu())) ??
+            context, details.globalPosition, SelectImageMenu())) ??
         ResultImagePicker();
     if (result.remove) {
       setState(() {

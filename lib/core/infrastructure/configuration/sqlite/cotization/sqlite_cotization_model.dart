@@ -3,7 +3,8 @@ part of 'sqlite_cotization_repository.dart';
 class SQLiteCotizationModel {
   final String name, description;
   final int? id;
-  final bool finished;
+  final int? finished, deletedAt;
+  final int createdAt, updatedAt;
   final bool isAccount;
   final double? tax;
   final int color;
@@ -14,8 +15,11 @@ class SQLiteCotizationModel {
     required this.description,
     required this.color,
     required this.tax,
-    required this.finished,
     required this.isAccount,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
+    this.finished,
     this.id,
     required this.items,
   });
@@ -28,10 +32,13 @@ class SQLiteCotizationModel {
       color: map["color"] as int,
       tax: (map["tax"] as double?),
       isAccount: SQLBoolValue.integerToBool(map["is_account"] as int),
-      finished: SQLBoolValue.integerToBool((map["finished"] as int)),
+      finished: (map["finished"] as int?),
       items: (map['items'] as List<Map<String, Object?>>)
           .map((e) => SQLiteCotizationItemModel.fromMap(e))
           .toList(),
+      createdAt: map["created_at"] as int,
+      updatedAt: map["updated_at"] as int,
+      deletedAt: (map["deleted_at"] as int?),
     );
   }
 
@@ -45,7 +52,10 @@ class SQLiteCotizationModel {
       items: cotization.items
           .map((e) => SQLiteCotizationItemModel.fromCotizationItem(e))
           .toList(),
-      finished: cotization.finished,
+      finished: cotization.finished?.millisecondsSinceEpoch,
+      createdAt: cotization.createdAt.millisecondsSinceEpoch,
+      updatedAt: cotization.updatedAt.millisecondsSinceEpoch,
+      deletedAt: cotization.deletedAt?.millisecondsSinceEpoch,
     );
   }
 
@@ -56,7 +66,10 @@ class SQLiteCotizationModel {
       "tax": tax,
       "is_account": SQLBoolValue.boolToInteger(isAccount),
       "color": color,
-      "finished": SQLBoolValue.boolToInteger(finished),
+      "finished": finished,
+      "created_at": createdAt,
+      "updated_at": updatedAt,
+      "deleted_at": deletedAt,
     };
   }
 
@@ -68,7 +81,14 @@ class SQLiteCotizationModel {
       color: color,
       tax: tax,
       isAccount: isAccount,
-      finished: finished,
+      finished: finished != null
+          ? DateTime.fromMillisecondsSinceEpoch(finished!)
+          : null,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(createdAt),
+      updatedAt: DateTime.fromMillisecondsSinceEpoch(updatedAt),
+      deletedAt: deletedAt != null
+          ? DateTime.fromMillisecondsSinceEpoch(deletedAt!)
+          : null,
       items: items.map((e) => e.toCotizationItem()).toList(),
     );
   }

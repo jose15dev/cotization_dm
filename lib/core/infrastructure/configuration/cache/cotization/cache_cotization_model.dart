@@ -3,18 +3,23 @@ part of 'cache_cotization_service.dart';
 class CacheCotizationModel {
   final String name, description;
   final int? id;
-  final bool finished, isAccount;
+  final bool isAccount;
   final double? tax;
   final int color;
   final List<CacheCotizationItemModel> items;
+  final int? finished, deletedAt;
+  final int createdAt, updatedAt;
 
   CacheCotizationModel({
     required this.name,
     required this.description,
     required this.color,
     required this.tax,
-    required this.finished,
     required this.isAccount,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
+    this.finished,
     this.id,
     required this.items,
   });
@@ -27,10 +32,13 @@ class CacheCotizationModel {
       color: map["color"] as int,
       tax: map["tax"] as double?,
       isAccount: map["is_account"] as bool,
-      finished: map["finished"] as bool,
+      finished: map["finished"] as int?,
       items: (map['items'] as List<Map<String, Object?>>)
           .map((e) => CacheCotizationItemModel.fromMap(e))
           .toList(),
+      createdAt: map["created_at"] as int,
+      updatedAt: map["updated_at"] as int,
+      deletedAt: map["deleted_at"] as int?,
     );
   }
 
@@ -45,7 +53,10 @@ class CacheCotizationModel {
       items: cotization.items
           .map((e) => CacheCotizationItemModel.fromCotizationItem(e))
           .toList(),
-      finished: cotization.finished,
+      finished: cotization.finished?.millisecondsSinceEpoch,
+      createdAt: cotization.createdAt.millisecondsSinceEpoch,
+      updatedAt: cotization.updatedAt.millisecondsSinceEpoch,
+      deletedAt: cotization.deletedAt?.millisecondsSinceEpoch,
     );
   }
 
@@ -68,6 +79,9 @@ class CacheCotizationModel {
       "color": color,
       "is_account": isAccount,
       "finished": finished,
+      "created_at": createdAt,
+      "updated_at": updatedAt,
+      "deleted_at": deletedAt,
       "items": items.map((e) => e.toString()).toList(),
     };
   }
@@ -80,7 +94,14 @@ class CacheCotizationModel {
       color: color,
       tax: tax,
       isAccount: isAccount,
-      finished: finished,
+      finished: finished != null
+          ? DateTime.fromMillisecondsSinceEpoch(finished!)
+          : null,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(createdAt),
+      updatedAt: DateTime.fromMillisecondsSinceEpoch(updatedAt),
+      deletedAt: deletedAt != null
+          ? DateTime.fromMillisecondsSinceEpoch(deletedAt!)
+          : null,
       items: items.map((e) => e.toCotizationItem()).toList(),
     );
   }

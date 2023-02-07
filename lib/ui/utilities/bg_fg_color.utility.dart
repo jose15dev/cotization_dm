@@ -12,4 +12,9 @@ abstract class BgFgColorUtility {
       return ColorPalete.black;
     }
   }
+
+  static int getIndex(Color color) {
+    return Colors.primaries
+        .indexWhere((element) => element.value == color.value);
+  }
 }

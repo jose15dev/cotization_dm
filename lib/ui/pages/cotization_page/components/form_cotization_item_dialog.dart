@@ -88,39 +88,41 @@ class _FormCotizationItemContentState extends State<FormCotizationItemContent> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    return AlertDialog(
-      alignment: Alignment.center,
-      insetPadding: EdgeInsets.zero,
-      contentPadding: EdgeInsets.zero,
-      content: BlocConsumer<FormCotizationItemCubit, FormCotizationItemState>(
-        listener: (context, state) {
-          if (state is FormCotizationItemSaveSuccess) {
-            Navigator.of(context).pop({
-              "newItem": state.item,
-              "oldItem": state.oldItem,
-            });
-          }
-        },
-        builder: (context, state) {
-          if (state is FormCotizationItemSaveLoading) {
-            return Center(
-              child: LoadingIndicator(color: widget.background),
-            );
-          }
-          return SizedBox(
-            width: size.width,
-            height: size.height / 1.5,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                _heading(),
-                _calcItem(size),
-              ],
-            ),
-          );
-        },
-      ),
-    );
+    return LayoutBuilder(builder: (context, constraints) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(15.0),
+        child: Material(
+          child: BlocConsumer<FormCotizationItemCubit, FormCotizationItemState>(
+            listener: (context, state) {
+              if (state is FormCotizationItemSaveSuccess) {
+                Navigator.of(context).pop({
+                  "newItem": state.item,
+                  "oldItem": state.oldItem,
+                });
+              }
+            },
+            builder: (context, state) {
+              if (state is FormCotizationItemSaveLoading) {
+                return Center(
+                  child: LoadingIndicator(color: widget.background),
+                );
+              }
+              return SizedBox(
+                width: constraints.maxWidth * .8,
+                height: constraints.maxHeight * .65,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    _heading(),
+                    _calcItem(size),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    });
   }
 
   Widget _calcItem(Size size) {

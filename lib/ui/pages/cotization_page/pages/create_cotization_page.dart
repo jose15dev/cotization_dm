@@ -3,10 +3,12 @@ import 'package:cotizacion_dm/core/infrastructure/infrastructure.dart';
 import 'package:cotizacion_dm/ui/bloc/bloc.dart';
 import 'package:cotizacion_dm/ui/components/components.dart';
 import 'package:cotizacion_dm/ui/pages/pages.dart';
-import 'package:cotizacion_dm/ui/styled/styled.dart';
 import 'package:cotizacion_dm/ui/utilities/utilities.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+Cotization? lastValue;
 
 class CreateCotizationPage extends StatelessWidget {
   final Cotization? cotization;
@@ -43,15 +45,19 @@ class CreateCotizationView extends StatefulWidget {
   State<CreateCotizationView> createState() => _CreateCotizationViewState();
 }
 
-class _CreateCotizationViewState extends State<CreateCotizationView> {
+class _CreateCotizationViewState extends State<CreateCotizationView>
+    with SingleTickerProviderStateMixin {
   late Color selectedColor;
   late Color textColor;
   late bool onlyShow;
   late ScrollController scrollController;
+  late TabController _tabController;
+  late TextEditingController _nameController, _descriptionController;
+
+  var _enableFloatingButton = false;
 
   FormCotizationCubit get blocProvider => BlocProvider.of(context);
   SnackbarBloc get snackbarBloc => BlocProvider.of(context);
-
   @override
   void initState() {
     // TODO: implement initState
@@ -64,12 +70,26 @@ class _CreateCotizationViewState extends State<CreateCotizationView> {
       selectedColor = Color(widget.cotization!.color);
       textColor = BgFgColorUtility.getFgForBg(widget.cotization!.color);
       blocProvider.loadCotization(widget.cotization!, widget.onCopy);
+      _nameController = TextEditingController(text: widget.cotization!.name);
+      _descriptionController =
+          TextEditingController(text: widget.cotization!.description);
+    } else {
+      _nameController = TextEditingController();
+      _descriptionController = TextEditingController();
     }
+
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      setState(() {
+        _enableFloatingButton = _tabController.index == 1;
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    var orientation = MediaQuery.of(context).orientation;
+    var floatingButtonKey = GlobalKey();
+
     return BlocListener<FormCotizationCubit, FormCotizationState>(
         listener: (context, state) {
           if (state is FormOnSaveCotizationSuccess) {
@@ -78,206 +98,269 @@ class _CreateCotizationViewState extends State<CreateCotizationView> {
           if (state is FormOnSaveCotizationFailed) {
             snackbarBloc.add(ErrorSnackbarEvent(state.message));
           }
-          if (state is FormOnSaveCotizationLoading) {
-            _dialogFinish();
-          }
 
-          if (state is OnAddNewItem) {
-            _dialogFormItem();
-          }
           if (state is FormOnEditItem) {
-            _dialogFormItem(state);
+            _dialogFormItem(state.position, state);
           }
           if (state is ActionItemFailed) {
             snackbarBloc.add(WarningSnackbarEvent(state.message));
           }
         },
         child: Scaffold(
+          resizeToAvoidBottomInset: !_enableFloatingButton,
           backgroundColor: ColorPalete.white,
-          body: _buildBody(orientation),
-          floatingActionButtonLocation: _floatingButtonLocation(orientation),
-          floatingActionButton: _buildFloatingButton(),
-          resizeToAvoidBottomInset: false,
+          body: SafeArea(
+            child: LayoutBuilder(builder: (context, constraints) {
+              var keyboardIsOpen =
+                  WidgetsBinding.instance.window.viewInsets.bottom > 0.0;
+              var sizeMaxHeight =
+                  constraints.maxHeight * (keyboardIsOpen ? 0.6 : 0.4);
+              var color = ColorPalete.white;
+
+              return NestedScrollView(
+                physics: const BouncingScrollPhysics(),
+                body: TabBarView(
+                  controller: _tabController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    ListView(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      physics: const BouncingScrollPhysics(),
+                      children: [
+                        LayoutBuilder(builder: (context, constraints) {
+                          return ColorPicker(
+                            width: constraints.maxWidth - 20,
+                            initialColor: selectedColor,
+                            onChange: ((p0, p1) {
+                              setState(() {
+                                selectedColor = p0;
+                                textColor = p1;
+                              });
+                              blocProvider.updateColor(p0.value);
+                            }),
+                          );
+                        }),
+                        const SizedBox(height: 20),
+                        CustomTextfield(
+                          align: TextAlign.left,
+                          stream: blocProvider.nameStream,
+                          controller: _nameController,
+                          filled: true,
+                          enableError: true,
+                          onChanged: (p0) => blocProvider.updateName(p0),
+                          label: "Nombre del cliente",
+                          foreground: Colors.grey.shade800,
+                          fontSize: 20,
+                        ),
+                        CustomTextfield(
+                          maxLines: 3,
+                          stream: blocProvider.descStream,
+                          controller: _descriptionController,
+                          align: TextAlign.left,
+                          filled: true,
+                          enableError: true,
+                          onChanged: (p0) => blocProvider.updateDescription(p0),
+                          label: "Descripción de la cotización",
+                          foreground: Colors.grey.shade800,
+                          fontSize: 20,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _title("CARGAR IMPUESTOS (IVA)"),
+                            StreamBuilder<double?>(
+                                stream: blocProvider.taxStream,
+                                builder: (context, snapshot) {
+                                  return Switch(
+                                    activeTrackColor:
+                                        selectedColor.withOpacity(0.6),
+                                    activeColor: selectedColor,
+                                    value: snapshot.data != null,
+                                    onChanged: (value) {
+                                      if (value) {
+                                        blocProvider.updateTax(
+                                            AppSetup.getTaxPercentOption()
+                                                ?.percent);
+                                      } else {
+                                        blocProvider.updateTax(null);
+                                      }
+                                    },
+                                  );
+                                }),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _title("CUENTA DE COBRO"),
+                            StreamBuilder<bool>(
+                                stream: blocProvider.isAccountStream,
+                                initialData: false,
+                                builder: (context, snapshot) {
+                                  return Switch(
+                                    activeTrackColor:
+                                        selectedColor.withOpacity(0.6),
+                                    activeColor: selectedColor,
+                                    value: snapshot.data!,
+                                    onChanged: (value) {
+                                      blocProvider.updateIsAccount(value);
+                                    },
+                                  );
+                                }),
+                          ],
+                        ),
+                      ],
+                    ),
+                    StreamBuilder<List<CotizationItem>>(
+                        stream: blocProvider.itemsStream,
+                        initialData: const [],
+                        builder: (context, snapshot) {
+                          if (snapshot.data!.isEmpty) {
+                            return Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(FontAwesomeIcons.fileInvoiceDollar,
+                                    size: 100, color: Colors.grey.shade300),
+                                const SizedBox(height: 10),
+                                Text(
+                                  "No hay servicios agregados",
+                                  style: TextStyle(
+                                    color: Colors.grey.shade300,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ],
+                            );
+                          }
+                          return ListView.builder(
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: snapshot.data!.length,
+                            itemBuilder: (context, index) => CardItemCotization(
+                              snapshot.data![index],
+                              bloc: blocProvider,
+                              color: selectedColor,
+                              activeActions: true,
+                              key: Key(snapshot.data![index].id.toString()),
+                            ),
+                          );
+                        }),
+                  ],
+                ),
+                headerSliverBuilder: ((context, innerBoxIsScrolled) {
+                  return [
+                    SliverAppBar(
+                      backgroundColor: color,
+                      pinned: true,
+                      actions: [
+                        StreamBuilder<bool>(
+                            stream: blocProvider.validateForm,
+                            initialData: false,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData && snapshot.data!) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 16.0),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      blocProvider.save();
+                                    },
+                                    child: const Icon(
+                                        FontAwesomeIcons.solidFloppyDisk),
+                                  ),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            })
+                      ],
+                    ),
+                    SliverAppBar(
+                      automaticallyImplyLeading: false,
+                      backgroundColor: color,
+                      collapsedHeight: sizeMaxHeight,
+                      flexibleSpace: FlexibleSpaceBar(
+                        background: Container(
+                          padding: const EdgeInsets.all(20.0),
+                          child: StreamBuilder<Cotization>(
+                              stream:
+                                  BlocProvider.of<FormCotizationCubit>(context)
+                                      .cotizationStream,
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
+                                  lastValue = snapshot.data;
+                                }
+                                if (lastValue is Cotization) {
+                                  return Hero(
+                                    tag: "cotization-${lastValue!.id}",
+                                    child: AnimatedCardCotization(
+                                      lastValue!,
+                                      isDetail: true,
+                                    ),
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              }),
+                        ),
+                      ),
+                    ),
+                    SliverAppBar(
+                      pinned: true,
+                      automaticallyImplyLeading: false,
+                      backgroundColor: color,
+                      toolbarHeight: 20.0,
+                      bottom: TabBar(
+                        padding: const EdgeInsets.only(bottom: 20.0),
+                        controller: _tabController,
+                        tabs: const [
+                          Tab(
+                            text: "Datos Generales",
+                          ),
+                          Tab(
+                            text: "Servicios",
+                          ),
+                        ],
+                        labelColor: Colors.grey.shade700,
+                        indicator: DotPlaneIndicator(Colors.grey.shade700),
+                        labelStyle: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        unselectedLabelStyle: const TextStyle(
+                          fontSize: 18,
+                        ),
+                      ),
+                    )
+                  ];
+                }),
+              );
+            }),
+          ),
+          floatingActionButton: _enableFloatingButton
+              ? FloatingActionButton.extended(
+                  key: floatingButtonKey,
+                  backgroundColor: selectedColor,
+                  foregroundColor: textColor,
+                  onPressed: () {
+                    var box = floatingButtonKey.currentContext!
+                        .findRenderObject() as RenderBox;
+                    Offset position = box.localToGlobal(Offset.zero);
+                    _dialogFormItem(position);
+                  },
+                  label: const Text("Agregar Servicio"),
+                  icon: const Icon(FontAwesomeIcons.plus),
+                )
+              : null,
         ));
   }
 
-  Widget? _buildFloatingButton() {
-    if (!onlyShow) {
-      return FloatingActionButton.extended(
-        backgroundColor: selectedColor,
-        label: Text(
-          "Nuevo Item",
-          style: TextStyle(
-            color: textColor,
-          ),
-        ),
-        icon: Icon(
-          Icons.add,
-          color: textColor,
-        ),
-        onPressed: blocProvider.onAddNewItem,
-      );
-    }
-    if (onlyShow &&
-        widget.cotization is Cotization &&
-        !widget.cotization!.finished) {
-      return FloatingActionButton.extended(
-        backgroundColor: selectedColor,
-        label: Text(
-          "Editar",
-          style: TextStyle(
-            color: textColor,
-          ),
-        ),
-        icon: Icon(
-          Icons.edit,
-          color: textColor,
-        ),
-        onPressed: () => setState(() {
-          onlyShow = false;
-          scrollController.animateTo(MediaQuery.of(context).size.height - 300,
-              duration: const Duration(milliseconds: 1000),
-              curve: Curves.easeIn);
-        }),
-      );
-    }
-    return null;
-  }
-
-  FloatingActionButtonLocation _floatingButtonLocation(
-      Orientation orientation) {
-    if (orientation == Orientation.landscape) {
-      return FloatingActionButtonLocation.endFloat;
-    }
-
-    if (onlyShow) {
-      return FloatingActionButtonLocation.endFloat;
-    }
-
-    return FloatingActionButtonLocation.centerFloat;
-  }
-
-  Widget _buildBody(Orientation orientation) {
-    var size = MediaQuery.of(context).size;
-    var width = size.width;
-    return SizedBox(
-      height: size.height,
-      width: width,
-      child: LayoutBuilder(builder: (context, constrains) {
-        var slivers = <Widget>[
-          SliverPersistentHeader(
-            delegate: CotizationHeadDelegate(
-              constrains.maxHeight,
-              onlyShow,
-              selectedColor,
-              textColor,
-              widget.cotization,
-            ),
-            pinned: true,
-          ),
-        ];
-
-        if (!onlyShow) {
-          slivers.addAll([
-            SliverToBoxAdapter(child: _taxSwitch()),
-            SliverToBoxAdapter(child: _accountSwitch()),
-            SliverToBoxAdapter(child: _title("SELECCIONE UN COLOR")),
-            SliverToBoxAdapter(child: _colorPicker(width, 100)),
-          ]);
-        }
-
-        slivers.addAll([
-          SliverToBoxAdapter(child: _title("ITEMS")),
-          _items(),
-        ]);
-
-        scrollController = ScrollController(
-            initialScrollOffset: onlyShow ? 0 : constrains.maxHeight * 0.6);
-        return CustomScrollView(
-          controller: scrollController,
-          slivers: slivers,
-        );
-      }),
-    );
-  }
-
-  Row _accountSwitch() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _title("CUENTA DE COBRO"),
-        StreamBuilder<bool>(
-          stream: blocProvider.isAccountStream,
-          builder: (context, snapshot) {
-            return Switch(
-              activeTrackColor: selectedColor.withOpacity(0.6),
-              activeColor: selectedColor,
-              value: snapshot.data ?? false,
-              onChanged: (value) {
-                blocProvider.updateIsAccount(value);
-              },
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Row _taxSwitch() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _title("CARGAR IMPUESTOS (IVA)"),
-        StreamBuilder<double?>(
-            stream: blocProvider.taxStream,
-            builder: (context, snapshot) {
-              return Switch(
-                activeTrackColor: selectedColor.withOpacity(0.6),
-                activeColor: selectedColor,
-                value: snapshot.data != null,
-                onChanged: (value) {
-                  if (value) {
-                    blocProvider
-                        .updateTax(AppSetup.getTaxPercentOption()?.percent);
-                  } else {
-                    blocProvider.updateTax(null);
-                  }
-                },
-              );
-            }),
-      ],
-    );
-  }
-
-  Future<void> _dialogFinish() async {
-    bool? res = await showDialog(
-      context: context,
-      builder: ((context) {
-        return FinishDialog(
-          title: "Desea entregar la cotization de inmediato?",
-          selectedColor: selectedColor,
-        );
-      }),
-    );
-
-    if (res is bool) {
-      blocProvider.save(res);
-    } else {
-      blocProvider.resetState();
-    }
-  }
-
-  Future<void> _dialogFormItem([FormOnEditItem? state]) async {
-    Map<String, CotizationItem?>? items = await showDialog(
-        context: context,
-        builder: (context) {
-          return FormCotizationItemDialog(
-            state?.item,
-            background: selectedColor,
-            foreground: textColor,
-            onCopy: state?.copy,
-          );
-        });
+  Future<void> _dialogFormItem(Offset position, [FormOnEditItem? state]) async {
+    Map<String, CotizationItem?>? items = await dialogScale(
+        context,
+        position,
+        FormCotizationItemDialog(
+          state?.item,
+          background: selectedColor,
+          foreground: textColor,
+          onCopy: state?.copy,
+        ));
 
     FocusManager.instance.primaryFocus?.unfocus();
 
@@ -310,53 +393,38 @@ class _CreateCotizationViewState extends State<CreateCotizationView> {
           style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
         ));
   }
+}
 
-  Widget _items() {
-    return StreamBuilder<List<CotizationItem>>(
-        stream: blocProvider.itemsStream,
-        builder: ((context, snapshot) {
-          var items = <CotizationItem>[];
-          if (snapshot.hasData) {
-            items = snapshot.data!;
-            if (items.isNotEmpty) {
-              var children = items
-                  .map((e) => CardItemCotization(
-                        e,
-                        bloc: blocProvider,
-                        activeActions: !onlyShow,
-                        key: UniqueKey(),
-                      ))
-                  .toList();
-              return SliverList(
-                delegate: SliverChildListDelegate(children),
-              );
-            }
-          }
+class _SliverChildPersistenHeader extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  final double minHeight, maxHeight;
+  final Color? backgroundColor;
 
-          return const SliverToBoxAdapter(
-            child: MessageInfo(
-              "No hay items",
-              enableIcon: false,
-            ),
-          );
-        }));
+  _SliverChildPersistenHeader(
+      {required this.child,
+      required this.minHeight,
+      required this.maxHeight,
+      this.backgroundColor});
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: backgroundColor,
+      child: child,
+    );
   }
 
-  Widget _colorPicker(double width, double height) {
-    var crossAxisCount = (height / 150).ceil();
-    return SizedBox(
-      height: height,
-      width: width,
-      child: ColorPicker(
-        crossAxisCount: crossAxisCount,
-        onChange: ((bgColor, fgColor) {
-          setState(() {
-            selectedColor = bgColor;
-            textColor = fgColor;
-            blocProvider.updateColor(bgColor.value);
-          });
-        }),
-      ),
-    );
+  @override
+  // TODO: implement maxExtent
+  double get maxExtent => maxHeight;
+
+  @override
+  // TODO: implement minExtent
+  double get minExtent => minHeight;
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
+    return false;
   }
 }

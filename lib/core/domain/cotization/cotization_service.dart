@@ -8,6 +8,21 @@ abstract class CotizationService {
   Future<int> delete(Cotization cotization);
 }
 
+abstract class QueryCotizationService {
+  List<Cotization> orderByLastUpdated({required List<Cotization> cotizations});
+  List<Cotization> orderByName({required List<Cotization> cotizations});
+  List<Cotization> orderByCreateAt({required List<Cotization> cotizations});
+  List<Cotization> orderByPrice({required List<Cotization> cotizations});
+  List<Cotization> getOnlyWithTax({required List<Cotization> cotizations});
+  List<Cotization> getOnlyWithoutTax({required List<Cotization> cotizations});
+  List<Cotization> getOnlyFinished({required List<Cotization> cotizations});
+  List<Cotization> getOnlyNotFinished({required List<Cotization> cotizations});
+  List<Cotization> getOnlyNotDeleted({required List<Cotization> cotizations});
+  List<Cotization> getOnlyDeleted({required List<Cotization> cotizations});
+  List<Cotization> getOnlyAccounts({required List<Cotization> cotizations});
+  List<Cotization> getOnlyNotAccounts({required List<Cotization> cotizations});
+}
+
 @Injectable(as: CotizationService)
 class DomainCotizationService implements CotizationService {
   final CotizationRepository _repository;
@@ -46,5 +61,72 @@ class DomainCotizationService implements CotizationService {
     var id = await _repository.update(cotization);
     var res = await findById(id);
     return res;
+  }
+}
+
+@Injectable(as: QueryCotizationService)
+class DomainQueryCotizationService implements QueryCotizationService {
+  @override
+  List<Cotization> getOnlyAccounts({required List<Cotization> cotizations}) {
+    return cotizations.where((cotization) => cotization.isAccount).toList();
+  }
+
+  @override
+  List<Cotization> getOnlyDeleted({required List<Cotization> cotizations}) {
+    return cotizations
+        .where((cotization) => cotization.deletedAt != null)
+        .toList();
+  }
+
+  @override
+  List<Cotization> getOnlyFinished({required List<Cotization> cotizations}) {
+    return cotizations.where((element) => element.finished != null).toList();
+  }
+
+  @override
+  List<Cotization> getOnlyNotAccounts({required List<Cotization> cotizations}) {
+    return cotizations.where((cotization) => !cotization.isAccount).toList();
+  }
+
+  @override
+  List<Cotization> getOnlyNotDeleted({required List<Cotization> cotizations}) {
+    return cotizations
+        .where((cotization) => cotization.deletedAt == null)
+        .toList();
+  }
+
+  @override
+  List<Cotization> getOnlyNotFinished({required List<Cotization> cotizations}) {
+    return cotizations.where((element) => element.finished == null).toList();
+  }
+
+  @override
+  List<Cotization> getOnlyWithTax({required List<Cotization> cotizations}) {
+    return cotizations.where((cotization) => cotization.tax != null).toList();
+  }
+
+  @override
+  List<Cotization> orderByCreateAt({required List<Cotization> cotizations}) {
+    return [...cotizations]..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+  }
+
+  @override
+  List<Cotization> orderByLastUpdated({required List<Cotization> cotizations}) {
+    return [...cotizations]..sort((a, b) => a.updatedAt.compareTo(b.updatedAt));
+  }
+
+  @override
+  List<Cotization> orderByName({required List<Cotization> cotizations}) {
+    return [...cotizations]..sort((a, b) => a.name.compareTo(b.name));
+  }
+
+  @override
+  List<Cotization> orderByPrice({required List<Cotization> cotizations}) {
+    return [...cotizations]..sort((a, b) => a.total.compareTo(b.total));
+  }
+
+  @override
+  List<Cotization> getOnlyWithoutTax({required List<Cotization> cotizations}) {
+    return cotizations.where((cotization) => cotization.tax == null).toList();
   }
 }

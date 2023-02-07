@@ -76,25 +76,28 @@ class GradientAction extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTapDown: onTap,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            color: ColorPalete.white,
-          ),
-          const SizedBox(height: 5),
-          Text(
-            label,
-            style: TextStyle(
+      child: Container(
+        color: Colors.transparent,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
               color: ColorPalete.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
             ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+            const SizedBox(height: 5),
+            Text(
+              label,
+              style: TextStyle(
+                color: ColorPalete.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

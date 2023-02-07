@@ -1,11 +1,12 @@
 import 'package:cotizacion_dm/core/domain/cotization/cotization.dart';
 import 'package:cotizacion_dm/core/infrastructure/configuration/sqlite/sqlite_provider.dart';
 import 'package:injectable/injectable.dart';
+import 'package:sqflite/sqlite_api.dart';
 
 part 'sqlite_cotization_model.dart';
 
 @Injectable(as: CotizationRepository)
-class SQLiteCotizationRepository extends CotizationRepository {
+class SQLiteCotizationRepository implements CotizationRepository {
   final SQLiteProvider _provider;
   static const table = "cotizations";
   static const foreignTable = "cotization_items";
@@ -18,7 +19,10 @@ class SQLiteCotizationRepository extends CotizationRepository {
     color INTEGER NOT NULL,
     is_account INTEGER NOT NULL,
     tax REAL,
-    finished  INTEGER NOT NULL
+    finished  INTEGER,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    deleted_at INTEGER
   )
   """,
     """
@@ -37,11 +41,11 @@ class SQLiteCotizationRepository extends CotizationRepository {
   ];
 
   SQLiteCotizationRepository(this._provider);
-  @override
-  Future<List<Cotization>> cotizations() async {
-    await _checkOpenDB();
-    final db = await _provider.database;
-    var records = <Map<String, Object?>>[]..addAll(await db.query(table));
+
+  Future<List<Cotization>> _mapCotizations({
+    required List<Map<String, Object?>> records,
+    required Database db,
+  }) async {
     for (int i = 0; i < records.length; i++) {
       var sqlItems = await db.query(
         foreignTable,
@@ -60,8 +64,17 @@ class SQLiteCotizationRepository extends CotizationRepository {
     final models =
         records.map(((e) => SQLiteCotizationModel.fromMap(e))).toList();
 
-    db.close();
     return models.map((e) => e.toCotization()).toList();
+  }
+
+  @override
+  Future<List<Cotization>> cotizations() async {
+    await _checkOpenDB();
+    final db = await _provider.database;
+    var records = <Map<String, Object?>>[
+      ...(await db.rawQuery("SELECT * FROM $table"))
+    ];
+    return _mapCotizations(records: records, db: db);
   }
 
   @override

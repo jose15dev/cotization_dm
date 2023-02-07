@@ -1,8 +1,8 @@
 import 'package:cotizacion_dm/ui/utilities/utilities.dart';
 import 'package:flutter/material.dart';
 
-class DotIndicatorPainter extends BoxPainter {
-  static double radius = 8.0;
+class _DotIndicatorPainter extends BoxPainter {
+  double radius = 8.0;
   @override
   void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
     final dx = configuration.size!.width / 2;
@@ -13,9 +13,40 @@ class DotIndicatorPainter extends BoxPainter {
   }
 }
 
-class DotIndicator extends Decoration {
+class DotCircleIndicator extends Decoration {
   @override
   BoxPainter createBoxPainter([VoidCallback? onChanged]) {
-    return DotIndicatorPainter();
+    return _DotIndicatorPainter();
+  }
+}
+
+class DotPlaneIndicatorPainter extends BoxPainter {
+  final Color color;
+  double size = 30.0;
+
+  DotPlaneIndicatorPainter(this.color);
+  @override
+  void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
+    final begin =
+        offset + Offset(_getCentry(configuration), configuration.size!.height);
+    final end = offset +
+        Offset(_getCentry(configuration) + size, configuration.size!.height);
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 3;
+    canvas.drawLine(begin, end, paint);
+  }
+
+  double _getCentry(ImageConfiguration configuration) =>
+      (configuration.size!.width / 2) - (size / 2);
+}
+
+class DotPlaneIndicator extends Decoration {
+  final Color? color;
+
+  const DotPlaneIndicator([this.color]);
+  @override
+  BoxPainter createBoxPainter([VoidCallback? onChanged]) {
+    return DotPlaneIndicatorPainter(color ?? ColorPalete.primary);
   }
 }

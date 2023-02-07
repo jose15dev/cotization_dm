@@ -10,7 +10,8 @@ class Cotization extends Equatable {
   final List<CotizationItem> items;
   final int color;
   final double? tax;
-  final bool finished;
+  final DateTime? finished, deletedAt;
+  final DateTime createdAt, updatedAt;
   final bool isAccount;
 
   const Cotization({
@@ -18,13 +19,47 @@ class Cotization extends Equatable {
     required this.description,
     required this.color,
     required this.isAccount,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
     this.tax,
-    this.finished = false,
+    this.finished,
     this.items = const [],
     this.id,
   });
+  factory Cotization.delete(Cotization cotization) {
+    return Cotization(
+      name: cotization.name,
+      description: cotization.description,
+      items: cotization.items,
+      color: cotization.color,
+      tax: cotization.tax,
+      isAccount: cotization.isAccount,
+      finished: cotization.finished,
+      createdAt: cotization.createdAt,
+      updatedAt: cotization.updatedAt,
+      deletedAt: DateTime.now(),
+      id: cotization.id,
+    );
+  }
 
-  factory Cotization.withId(Cotization cotization, int id) {
+  factory Cotization.update(Cotization cotization) {
+    return Cotization(
+      name: cotization.name,
+      description: cotization.description,
+      items: cotization.items,
+      color: cotization.color,
+      tax: cotization.tax,
+      isAccount: cotization.isAccount,
+      finished: cotization.finished,
+      createdAt: cotization.createdAt,
+      updatedAt: DateTime.now(),
+      deletedAt: cotization.deletedAt,
+      id: cotization.id,
+    );
+  }
+
+  factory Cotization.restore(Cotization cotization) {
     return Cotization(
       name: cotization.name,
       description: cotization.description,
@@ -33,7 +68,10 @@ class Cotization extends Equatable {
       tax: cotization.tax,
       finished: cotization.finished,
       isAccount: cotization.isAccount,
-      id: id,
+      createdAt: cotization.createdAt,
+      updatedAt: cotization.updatedAt,
+      deletedAt: null,
+      id: cotization.id,
     );
   }
 
@@ -45,7 +83,10 @@ class Cotization extends Equatable {
       color: cotization.color,
       tax: cotization.tax,
       isAccount: cotization.isAccount,
-      finished: true,
+      finished: DateTime.now(),
+      createdAt: cotization.createdAt,
+      updatedAt: cotization.updatedAt,
+      deletedAt: cotization.deletedAt,
       id: cotization.id,
     );
   }

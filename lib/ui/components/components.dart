@@ -3,7 +3,7 @@ export 'card_payment_employee.component.dart';
 export 'color_picker.dart';
 export 'custom_dropdown.dart';
 export 'custom_painter.dart';
-export 'custom_textfield.component.dart';
+export 'custom_textfield.dart';
 export 'dialog_scale.dart';
 export 'header.component.dart';
 export 'heading_page.component.dart';

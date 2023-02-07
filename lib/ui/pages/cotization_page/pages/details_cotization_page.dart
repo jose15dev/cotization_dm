@@ -5,11 +5,15 @@ import 'package:cotizacion_dm/core/domain/domain.dart';
 import 'package:cotizacion_dm/core/infrastructure/infrastructure.dart';
 import 'package:cotizacion_dm/globals.dart';
 import 'package:cotizacion_dm/ui/components/components.dart';
+import 'package:cotizacion_dm/ui/components/select_menu.dart';
 import 'package:cotizacion_dm/ui/pages/pages.dart';
 import 'package:cotizacion_dm/ui/utilities/utilities.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+final _trashKey = GlobalKey();
+final _cardkey = GlobalKey();
 
 class DetailsCotizationPage extends StatefulWidget {
   final Cotization cotization;
@@ -89,15 +93,70 @@ class _DetailsCotizationPageState extends State<DetailsCotizationPage>
                             Padding(
                               padding: const EdgeInsets.only(right: 16.0),
                               child: GestureDetector(
-                                onTap: () {
-                                  _controller
-                                    ..reset()
-                                    ..forward().then((value) {
-                                      Navigator.of(context).pop(_cotization);
-                                    });
-                                },
-                                child: const Icon(
-                                  FontAwesomeIcons.trash,
+                                key: _trashKey,
+                                onTapDown: ((details) {
+                                  dialogScale(
+                                    context,
+                                    details.globalPosition,
+                                    SelectMenu(children: [
+                                      MenuAction(
+                                        icon: FontAwesomeIcons.trash,
+                                        text: "Eliminar definitivamente",
+                                        onTap: () {
+                                          Navigator.of(context).pop(
+                                            DetailsAction(
+                                              cotization: _cotization,
+                                              action: DetailsActionType.delete,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      if (_cotization.deletedAt != null)
+                                        MenuAction(
+                                          icon: FontAwesomeIcons.trashArrowUp,
+                                          text: "Restaurar",
+                                          onTap: (() =>
+                                              Navigator.of(context).pop(
+                                                DetailsAction(
+                                                    cotization: _cotization,
+                                                    action: DetailsActionType
+                                                        .restore),
+                                              )),
+                                        ),
+                                      if (_cotization.deletedAt == null)
+                                        MenuAction(
+                                          icon: FontAwesomeIcons.boxArchive,
+                                          text: "Enviar a la papelera",
+                                          onTap: () {
+                                            Navigator.of(context).pop(
+                                              DetailsAction(
+                                                cotization: _cotization,
+                                                action: DetailsActionType.trash,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                    ]),
+                                  ).then((value) {
+                                    if (value is DetailsAction &&
+                                        value.action ==
+                                            DetailsActionType.delete) {
+                                      _controller
+                                        ..reset()
+                                        ..forward().then(
+                                          (_) {
+                                            Navigator.of(context).pop(value);
+                                          },
+                                        );
+                                    } else {
+                                      Navigator.of(context).pop(value);
+                                    }
+                                  });
+                                }),
+                                child: Icon(
+                                  _cotization.deletedAt == null
+                                      ? FontAwesomeIcons.trash
+                                      : FontAwesomeIcons.trashArrowUp,
                                 ),
                               ),
                             )
@@ -125,13 +184,14 @@ class _DetailsCotizationPageState extends State<DetailsCotizationPage>
                             child: Padding(
                               padding: const EdgeInsets.all(10.0),
                               child: Center(
-                                child: Hero(
-                                  tag: "cotization-${_cotization.id}",
-                                  child: Opacity(
-                                    opacity: 1 - _moveCardAnimation.value,
-                                    child: _TransformCard(
-                                      movement: _moveCardAnimation.value,
-                                      rotation: _rotateCardAnimation.value,
+                                child: Opacity(
+                                  opacity: 1 - _moveCardAnimation.value,
+                                  child: _TransformCard(
+                                    key: _cardkey,
+                                    movement: _moveCardAnimation.value,
+                                    rotation: _rotateCardAnimation.value,
+                                    child: Hero(
+                                      tag: "cotization-${_cotization.id}",
                                       child: AnimatedCardCotization(
                                         _cotization,
                                         isUpdated: _isUpdated,
@@ -162,7 +222,10 @@ class _DetailsCotizationPageState extends State<DetailsCotizationPage>
                             delegate:
                                 SliverChildBuilderDelegate(((context, index) {
                           var item = _cotization.items[index];
-                          return _CotizationItemWidget(item: item);
+                          return CardItemCotization(
+                            item,
+                            activeActions: false,
+                          );
                         }), childCount: _cotization.items.length)),
                       ],
                     ),
@@ -175,105 +238,47 @@ class _DetailsCotizationPageState extends State<DetailsCotizationPage>
             Expanded(
               child: GradientAction(
                 onTap: (details) {
-                  bloc.exportToPDF(widget.cotization, getIt());
+                  bloc.exportToPDF(_cotization, getIt());
                 },
                 icon: FontAwesomeIcons.fileExport,
                 label: "Exportar a PDF",
               ),
             ),
-            if (!widget.cotization.finished)
+            if (_cotization.finished == null && _cotization.deletedAt == null)
               Expanded(
                 child: GradientAction(
                   onTap: (details) {
-                    bloc.onEditCotization(widget.cotization);
+                    bloc.onEditCotization(_cotization);
                   },
                   icon: FontAwesomeIcons.pencil,
                   label: "Editar",
                 ),
               ),
-            if (!widget.cotization.finished)
+            if (_cotization.finished == null && _cotization.deletedAt == null)
               Expanded(
                 child: GradientAction(
                   onTap: (details) {
-                    bloc.onFinishCotization(widget.cotization);
+                    bloc.onFinishCotization(_cotization);
                   },
                   icon: FontAwesomeIcons.truck,
                   label: "Entregar",
                 ),
               ),
-            Expanded(
-              child: GradientAction(
-                onTap: (details) {
-                  bloc.onEditCotization(widget.cotization, true);
-                },
-                icon: FontAwesomeIcons.solidCopy,
-                label: "Duplicar",
+            if (_cotization.deletedAt == null)
+              Expanded(
+                child: GradientAction(
+                  onTap: (details) {
+                    bloc.onEditCotization(_cotization, true);
+                  },
+                  icon: FontAwesomeIcons.solidCopy,
+                  label: "Duplicar",
+                ),
               ),
-            ),
           ],
           colors: [
             ColorPalete.primary,
             ColorPalete.secondary,
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CotizationItemWidget extends StatelessWidget {
-  const _CotizationItemWidget({
-    Key? key,
-    required this.item,
-  }) : super(key: key);
-
-  final CotizationItem item;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: const Icon(
-        FontAwesomeIcons.circleInfo,
-        size: 40,
-      ),
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            item.name,
-            style: const TextStyle(
-              fontSize: 20.0,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          if (item.description.isNotEmpty)
-            Text(
-              item.description,
-              style: const TextStyle(
-                fontSize: 15.0,
-              ),
-            ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              const Text('Cantidad: '),
-              Text("${item.amount} ${item.unit}"),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              const Text('Precio: '),
-              Text(CurrencyUtility.doubleToCurrency(item.unitValue)),
-            ],
-          ),
-        ],
-      ),
-      trailing: Text(
-        CurrencyUtility.doubleToCurrency(item.total),
-        style: const TextStyle(
-          fontSize: 20.0,
-          fontWeight: FontWeight.bold,
         ),
       ),
     );
@@ -313,19 +318,37 @@ class _TransformCard extends StatelessWidget {
   final Widget child;
   final double movement, rotation;
   const _TransformCard(
-      {required this.child, required this.movement, required this.rotation});
+      {super.key,
+      required this.child,
+      required this.movement,
+      required this.rotation});
 
   @override
   Widget build(BuildContext context) {
-    return Transform(
-      alignment: Alignment.center,
-      transform: Matrix4.identity()
-        ..setEntry(3, 2, 0.001)
-        ..translate(100.0 * movement, -300.0 * math.pow(movement, 2))
-        ..rotateX(-math.pi / 6 * rotation)
-        ..rotateZ(math.pi / 4 * movement)
-        ..scale(lerpDouble(1, 0.3, movement)!),
-      child: child,
-    );
+    return LayoutBuilder(builder: (context, constraints) {
+      var distance = getDistance(constraints.maxWidth, constraints.maxHeight);
+      var translateX = distance.dx * movement;
+      var translateY = distance.dy * movement;
+
+      return Transform(
+        alignment: Alignment.center,
+        transform: Matrix4.identity()
+          ..setEntry(3, 2, 0.001)
+          ..translate(translateX, translateY)
+          ..rotateX(-math.pi / 6 * rotation)
+          ..rotateZ(math.pi / 4 * movement)
+          ..scale(lerpDouble(1, 0.3, movement)!),
+        child: child,
+      );
+    });
+  }
+
+  Offset getDistance(double width, double height) {
+    var trashBox = _trashKey.currentContext?.findRenderObject() as RenderBox?;
+    var trashOffset = trashBox?.localToGlobal(Offset.zero) ?? Offset.zero;
+    var cardBox = _cardkey.currentContext?.findRenderObject() as RenderBox?;
+    var cardOffset = cardBox?.localToGlobal(Offset.zero) ?? Offset.zero;
+    var distance = (trashOffset - cardOffset.translate(0, height / 2));
+    return distance;
   }
 }

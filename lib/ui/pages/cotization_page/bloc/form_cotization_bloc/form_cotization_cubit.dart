@@ -2,15 +2,16 @@ import 'package:bloc/bloc.dart';
 import 'package:cotizacion_dm/core/domain/domain.dart';
 import 'package:cotizacion_dm/ui/exceptions/exceptions.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/gestures.dart';
 import 'package:rxdart/rxdart.dart';
 
 part 'form_cotization_state.dart';
 
 class FormCotizationCubit extends Cubit<FormCotizationState> {
   int? id;
-  final _nameCtrl = BehaviorSubject<String>(),
+  final _nameCtrl = BehaviorSubject<String>()..add(""),
       _descCtrl = BehaviorSubject<String>()..add("");
-  final _itemsCtrl = BehaviorSubject<List<CotizationItem>>();
+  final _itemsCtrl = BehaviorSubject<List<CotizationItem>>()..add([]);
   final _totalCtrl = BehaviorSubject<double>();
   final _taxCtrl = BehaviorSubject<double?>()..add(null);
   final _colorCtrl = BehaviorSubject<int>();
@@ -54,13 +55,10 @@ class FormCotizationCubit extends Cubit<FormCotizationState> {
 
   void updateName(String value) {
     try {
-      emit(FormCotizationValidationLoading());
       FieldValidation(value);
-      _nameCtrl.add(value);
-      emit(FormCotizationValidationSuccess());
+      _nameCtrl.add(value.trim());
     } on BaseFormException catch (e) {
-      _nameCtrl.add("");
-      emit(FormCotizationValidationFailed(e.toString()));
+      _nameCtrl.addError(e.toString());
     }
   }
 
@@ -78,13 +76,10 @@ class FormCotizationCubit extends Cubit<FormCotizationState> {
 
   void updateDescription(String value) {
     try {
-      emit(FormCotizationValidationLoading());
       FieldValidation(value);
-      _descCtrl.add(value);
-      emit(FormCotizationValidationSuccess());
+      _descCtrl.add(value..trim());
     } on BaseFormException catch (e) {
-      _descCtrl.add("");
-      emit(FormCotizationValidationFailed(e.toString()));
+      _descCtrl.addError(e.toString());
     }
   }
 
@@ -150,12 +145,12 @@ class FormCotizationCubit extends Cubit<FormCotizationState> {
     }
   }
 
-  void onEditItem(CotizationItem item) {
-    emit(FormOnEditItem(item));
+  void onEditItem(CotizationItem item, Offset position) {
+    emit(FormOnEditItem(item, position: position));
   }
 
-  void onCopyItem(CotizationItem item) {
-    emit(FormOnEditItem(item, copy: true));
+  void onCopyItem(CotizationItem item, Offset position) {
+    emit(FormOnEditItem(item, copy: true, position: position));
   }
 
   void onMoveUp(CotizationItem item) {
@@ -207,6 +202,26 @@ class FormCotizationCubit extends Cubit<FormCotizationState> {
     }
   }
 
+  Stream<Cotization> get cotizationStream => Rx.combineLatest6(
+          _nameCtrl.stream,
+          _descCtrl.stream,
+          _itemsCtrl.stream,
+          _colorCtrl.stream,
+          _taxCtrl.stream,
+          _isAccountCtrl.stream, (a, b, c, d, e, f) {
+        return Cotization(
+          id: id,
+          name: a.isEmpty ? "Cotización sin nombre" : a,
+          description: b.isEmpty ? "Sin descripción" : b,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          items: c,
+          color: d,
+          tax: e,
+          isAccount: f,
+        );
+      });
+
   Stream<bool> get validateForm =>
       Rx.combineLatest4(nameStream, itemsStream, taxStream, _colorCtrl.stream,
           (a, b, c, d) {
@@ -229,7 +244,8 @@ class FormCotizationCubit extends Cubit<FormCotizationState> {
         description: _descCtrl.value.trim(),
         color: _colorCtrl.value,
         tax: _taxCtrl.value,
-        finished: finish,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
         isAccount: _isAccountCtrl.value,
       );
 

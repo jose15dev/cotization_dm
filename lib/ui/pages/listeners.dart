@@ -91,7 +91,6 @@ class _AppListenerState extends State<AppListener> {
             }
 
             if (state is OnActionCotizationFailed) {
-              print(state.message);
               snackbarBloc.add(ErrorSnackbarEvent(state.message));
             }
 
@@ -144,10 +143,6 @@ class _AppListenerState extends State<AppListener> {
   void _popOnSave(value) {
     if (value is Cotization) {
       cotizationBloc.saveCotization(value);
-      if (value.finished) {
-        PDFCotizationService service = getIt();
-        cotizationBloc.exportToPDF(value, service);
-      }
     } else {
       cotizationBloc.resetState();
     }

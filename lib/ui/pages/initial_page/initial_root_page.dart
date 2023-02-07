@@ -1,9 +1,9 @@
 import 'package:cotizacion_dm/globals.dart';
 import 'package:cotizacion_dm/ui/pages/employee_page/utilities/dialog_employee.dart';
 import 'package:cotizacion_dm/ui/pages/pages.dart';
-import 'package:cotizacion_dm/ui/transitions/transitions.dart';
 import 'package:cotizacion_dm/ui/utilities/utilities.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class CustomStackPage {
@@ -24,8 +24,8 @@ final initialPages = [
   ),
   CustomStackPage("Cotizaciones", const AnimatedCotizationList(),
       onTap: (detils, context) {
-    Navigator.of(context).push(fadeTransition(
-        const CreateCotizationPage(onCopy: false, onlyShow: false)));
+    final cotizationBloc = BlocProvider.of<FetchCotizationCubit>(context);
+    cotizationBloc.onCreateCotization();
   }),
   CustomStackPage(
     "Pagos",
@@ -82,7 +82,7 @@ class _InitialRootPageState extends State<InitialRootPage>
           controller: _tabController,
           labelColor: ColorPalete.black,
           isScrollable: true,
-          indicator: DotIndicator(),
+          indicator: const DotPlaneIndicator(),
           labelStyle: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
