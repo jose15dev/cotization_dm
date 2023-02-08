@@ -73,7 +73,6 @@ class _AppListenerState extends State<AppListener> {
                       CreateCotizationPage(
                         cotization: state.cotization,
                         onCopy: state.onCopy,
-                        onlyShow: false,
                       ),
                     ),
                   )
@@ -84,7 +83,6 @@ class _AppListenerState extends State<AppListener> {
                   .push(
                     fadeTransition(const CreateCotizationPage(
                       onCopy: false,
-                      onlyShow: false,
                     )),
                   )
                   .then(_popOnSave);

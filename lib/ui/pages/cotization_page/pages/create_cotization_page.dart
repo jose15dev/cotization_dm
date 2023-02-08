@@ -13,12 +13,10 @@ Cotization? lastValue;
 class CreateCotizationPage extends StatelessWidget {
   final Cotization? cotization;
   final bool onCopy;
-  final bool onlyShow;
   const CreateCotizationPage({
     super.key,
     this.cotization,
     required this.onCopy,
-    required this.onlyShow,
   });
 
   @override
@@ -28,7 +26,6 @@ class CreateCotizationPage extends StatelessWidget {
       child: CreateCotizationView(
         cotization,
         onCopy: onCopy,
-        onlyShow: onlyShow,
       ),
     );
   }
@@ -37,9 +34,11 @@ class CreateCotizationPage extends StatelessWidget {
 class CreateCotizationView extends StatefulWidget {
   final Cotization? cotization;
   final bool onCopy;
-  final bool onlyShow;
-  const CreateCotizationView(this.cotization,
-      {super.key, required this.onCopy, required this.onlyShow});
+  const CreateCotizationView(
+    this.cotization, {
+    super.key,
+    required this.onCopy,
+  });
 
   @override
   State<CreateCotizationView> createState() => _CreateCotizationViewState();
@@ -65,7 +64,6 @@ class _CreateCotizationViewState extends State<CreateCotizationView>
     selectedColor = ColorPalete.primary;
     blocProvider.updateColor(selectedColor.value);
     textColor = ColorPalete.white;
-    onlyShow = widget.onlyShow;
     if (widget.cotization is Cotization) {
       selectedColor = Color(widget.cotization!.color);
       textColor = BgFgColorUtility.getFgForBg(widget.cotization!.color);
