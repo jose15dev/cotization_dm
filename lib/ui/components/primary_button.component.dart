@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 class CustomButton extends StatelessWidget {
   final String label;
   final Function()? onTap;
+  final GestureTapDownCallback? onTapDown;
   final IconData? icon;
   final bool bordered;
   final bool textOnly;
@@ -14,6 +15,7 @@ class CustomButton extends StatelessWidget {
     this.label, {
     super.key,
     this.onTap,
+    this.onTapDown,
     this.icon,
     this.textOnly = false,
     this.bordered = false,
@@ -30,6 +32,7 @@ class CustomButton extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
+        onTapDown: onTapDown,
         borderRadius: borderRadius,
         child: Ink(
           padding: const EdgeInsets.symmetric(horizontal: 10.0),

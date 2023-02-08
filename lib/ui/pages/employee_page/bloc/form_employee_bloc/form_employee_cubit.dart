@@ -66,11 +66,13 @@ class FormEmployeeCubit extends Cubit<FormEmployeeState> {
       if (status) {
         var list = await ContactsService.getContacts();
         if (list.isEmpty) {
-          emit(const OnContactsFailed("No hay contactos"));
+          emit(OnContactsEmpty());
         }
         if (list.isNotEmpty) {
-          var items =
-              list.map((e) => CustomContact.fromContactService(e)).toList();
+          var items = list
+              .where((e) => e.phones?.isNotEmpty == true)
+              .map((e) => CustomContact.fromContactService(e))
+              .toList();
           emit(OnContactsSuccess(items));
         }
       } else {

@@ -8,7 +8,6 @@ import 'package:currency_text_input_formatter/currency_text_input_formatter.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../bloc/form_employee_bloc/contact.dart';
 
@@ -86,10 +85,6 @@ class _EmployeeFormInfoState extends State<EmployeeFormInfo> {
           snackbarBloc.add(SuccessBannerEvent("Genial!!"));
         }
 
-        if (state is OnContactsLoading) {
-          _contactDialog();
-        }
-
         if (state is FormEmployeeOnEdit) {
           loadFields(state.firstname, state.lastname, state.phone, state.salary,
               state.image);
@@ -127,24 +122,16 @@ class _EmployeeFormInfoState extends State<EmployeeFormInfo> {
   }
 
   Widget _contactAction() {
-    return BlocBuilder<FormEmployeeCubit, FormEmployeeState>(
-      builder: (context, state) {
-        Function()? getContacts;
-        if (state is! OnContactsLoading) {
-          getContacts = formBloc.getContacts;
-        }
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: CustomButton(
-            "Usar contacto del telefono",
-            foreground: _foreground,
-            fontSize: 18,
-            textOnly: true,
-            bordered: true,
-            onTap: getContacts,
-          ),
-        );
-      },
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      child: CustomButton(
+        "Usar contacto del telefono",
+        foreground: _foreground,
+        fontSize: 18,
+        textOnly: true,
+        bordered: true,
+        onTapDown: _contactDialog,
+      ),
     );
   }
 
@@ -299,23 +286,33 @@ class _EmployeeFormInfoState extends State<EmployeeFormInfo> {
     });
   }
 
-  void _contactDialog() async {
-    var contact = await showDialog<CustomContact>(
-      context: context,
-      builder: ((context) {
-        return BlocBuilder<FormEmployeeCubit, FormEmployeeState>(
+  void _contactDialog(TapDownDetails details) async {
+    formBloc.getContacts();
+    var response = await dialogScale<ContactResponse>(
+        context,
+        details.globalPosition,
+        BlocConsumer<FormEmployeeCubit, FormEmployeeState>(
           bloc: formBloc,
+          listener: (context, state) {
+            if (state is OnContactsEmpty) {
+              Navigator.pop(
+                  context, ContactResponse(result: ContactDialogResult.empty));
+            }
+            if (state is OnContactsFailed) {
+              Navigator.pop(
+                  context, ContactResponse(result: ContactDialogResult.failed));
+            }
+          },
           builder: (context, state) {
             if (state is OnContactsSuccess) {
               return SelectContactDialog(contacts: state.contacts);
             }
+
             return const LoadingIndicator();
           },
-        );
-      }),
-    );
-    if (contact != null) {
-      formBloc.loadContact(contact);
+        ));
+    if (response?.result == ContactDialogResult.success) {
+      formBloc.loadContact(response!.contact!);
     }
   }
 }

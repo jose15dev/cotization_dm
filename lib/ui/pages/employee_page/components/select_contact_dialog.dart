@@ -28,14 +28,16 @@ class _SelectContactDialogState extends State<SelectContactDialog> {
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
     var foreground =
-        searchWord.isNotEmpty ? ColorPalete.white : Colors.grey.shade400;
+        filtered.isNotEmpty ? ColorPalete.primary : ColorPalete.white;
+    var background =
+        filtered.isNotEmpty ? ColorPalete.secondary : ColorPalete.error;
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: EdgeInsets.zero,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(30.0),
         child: SizedBox(
-          width: size.width * 0.95,
+          width: size.width * 0.8,
           height: size.height / 1.5,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -43,7 +45,7 @@ class _SelectContactDialogState extends State<SelectContactDialog> {
             children: [
               Expanded(
                 child: Container(
-                  color: ColorPalete.primary,
+                  color: background,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -61,12 +63,8 @@ class _SelectContactDialogState extends State<SelectContactDialog> {
               Expanded(
                 child: Container(
                     color: ColorPalete.white,
-                    child: GridView.builder(
-                      scrollDirection: Axis.horizontal,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisExtent: size.width / 2.2,
-                      ),
+                    child: ListView.builder(
+                      physics: const BouncingScrollPhysics(),
                       itemCount: filtered.length,
                       itemBuilder: ((context, index) {
                         var contact = filtered[index];
@@ -104,7 +102,9 @@ class _SelectContactDialogState extends State<SelectContactDialog> {
   }
 
   _save(CustomContact contact) {
-    Navigator.of(context).pop(contact);
+    Navigator.of(context).pop(
+      ContactResponse(contact: contact, result: ContactDialogResult.success),
+    );
   }
 }
 
@@ -119,39 +119,25 @@ class ContactItem extends StatelessWidget {
   final CustomContact contact;
 
   Widget _title(context) {
-    var valName = PhoneNumberUtility.isNumberPhone(contact.name);
-    if (!valName) {
-      return Text(
-        contact.name,
-        style: Theme.of(context).textTheme.bodyText1,
-        textAlign: TextAlign.center,
-      );
-    } else {
-      return Text(
-        PhoneNumberUtility.toAppNumber(contact.phone),
-        style: Theme.of(context).textTheme.bodyText1,
-        textAlign: TextAlign.center,
-      );
-    }
+    return Text(
+      contact.name,
+    );
+  }
+
+  Widget _phone(context) {
+    return Text(
+      contact.phone,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-        onTap: onTap,
-        child: Ink(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _avatar(),
-              const SizedBox(
-                height: 10,
-              ),
-              _title(context),
-            ],
-          ),
-        ));
+    return ListTile(
+      leading: _avatar(),
+      title: _title(context),
+      subtitle: _phone(context),
+      onTap: onTap,
+    );
   }
 
   Widget _avatar() {
@@ -172,4 +158,20 @@ class ContactItem extends StatelessWidget {
           : icon,
     );
   }
+}
+
+enum ContactDialogResult {
+  success,
+  failed,
+  empty,
+}
+
+class ContactResponse {
+  final CustomContact? contact;
+  final ContactDialogResult result;
+
+  ContactResponse({this.contact, required this.result})
+      : assert(
+          contact != null || result != ContactDialogResult.success,
+        );
 }

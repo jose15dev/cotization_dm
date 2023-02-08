@@ -1,4 +1,5 @@
 import 'package:contacts_service/contacts_service.dart';
+import 'package:cotizacion_dm/ui/utilities/utilities.dart';
 import 'package:flutter/foundation.dart';
 
 class CustomContact {
@@ -10,7 +11,7 @@ class CustomContact {
 
   factory CustomContact.fromContactService(Contact contact) {
     return CustomContact(
-      contact.phones!.isNotEmpty ? contact.phones!.first.value! : "",
+      PhoneNumberUtility.toAppNumber(contact.phones!.first.value!),
       contact.displayName ?? "",
       contact.avatar,
     );
