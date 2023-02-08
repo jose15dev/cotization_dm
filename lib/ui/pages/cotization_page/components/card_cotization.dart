@@ -353,7 +353,7 @@ class _AnimatedCardCotizationState extends State<AnimatedCardCotization>
                                         color: ColorPalete.black,
                                       ),
                                       gapless: false,
-                                      data: cotizationToJson(widget.item),
+                                      data: cotizationToQrCode(widget.item),
                                       foregroundColor: ColorPalete.black,
                                     ),
                                   ),

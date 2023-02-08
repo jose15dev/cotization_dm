@@ -1,4 +1,5 @@
 export 'bg_fg_color.utility.dart';
+export 'cotization_to_qr_code.dart';
 export 'currency.utility.dart';
 export 'delay.utility.dart';
 export 'image_filter.utility.dart';

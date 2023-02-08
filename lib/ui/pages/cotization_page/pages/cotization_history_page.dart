@@ -1,4 +1,3 @@
-import 'package:cotizacion_dm/core/domain/domain.dart';
 import 'package:cotizacion_dm/ui/components/components.dart';
 import 'package:cotizacion_dm/ui/pages/pages.dart';
 import 'package:cotizacion_dm/ui/styled/loading_indicator.dart';
@@ -38,8 +37,8 @@ class _AnimatedCotizationListState extends State<AnimatedCotizationList> {
                   if (state is OnFetchCotizationSuccess) {
                     var list = state.cotizations
                         .map(
-                          (e) => Hero(
-                            tag: "cotization-${e.id}",
+                          (e) => NormalCotizationHero(
+                            id: e.id,
                             child: AnimatedCardCotization(e),
                           ),
                         )
@@ -84,8 +83,6 @@ class _AnimatedCotizationListState extends State<AnimatedCotizationList> {
                                 if (value is DetailsAction &&
                                     value.action == DetailsActionType.delete) {
                                   bloc.forceDeleteCotization(value.cotization);
-                                } else {
-                                  bloc.resetState();
                                 }
                               },
                             );
@@ -266,48 +263,80 @@ class _FilterMenuWidgetState extends State<_FilterMenuWidget> {
                 Container(
                   color: ColorPalete.white,
                   height: minHeight,
-                  child: GestureDetector(
-                    onTap: () {
-                      _toggleExpand();
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          TweenAnimationBuilder(
-                              duration: const Duration(milliseconds: 1000),
-                              tween: _isExpanded
-                                  ? Tween(begin: 0.0, end: 1.0)
-                                  : Tween(begin: 1.0, end: 0.0),
-                              builder: (context, value, _) {
-                                if (_isExpanded) {
-                                  return Opacity(
-                                    opacity: value,
-                                    child: Icon(
-                                      FontAwesomeIcons.chevronUp,
-                                      color: Colors.grey.shade800,
-                                    ),
-                                  );
-                                }
-                                return Opacity(
-                                  opacity: 1 - value,
-                                  child: Icon(
-                                    FontAwesomeIcons.chevronDown,
-                                    color: Colors.grey.shade800,
-                                  ),
-                                );
-                              }),
-                          Text(
-                            "FILTROS DE BUSQUEDA",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey.shade800,
-                            ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            _toggleExpand();
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TweenAnimationBuilder(
+                                  duration: const Duration(milliseconds: 1000),
+                                  tween: _isExpanded
+                                      ? Tween(begin: 0.0, end: 1.0)
+                                      : Tween(begin: 1.0, end: 0.0),
+                                  builder: (context, value, _) {
+                                    if (_isExpanded) {
+                                      return Opacity(
+                                        opacity: value,
+                                        child: Icon(
+                                          FontAwesomeIcons.chevronUp,
+                                          color: Colors.grey.shade800,
+                                        ),
+                                      );
+                                    }
+                                    return Opacity(
+                                      opacity: 1 - value,
+                                      child: Icon(
+                                        FontAwesomeIcons.chevronDown,
+                                        color: Colors.grey.shade800,
+                                      ),
+                                    );
+                                  }),
+                              const SizedBox(width: 10),
+                              Text(
+                                "FILTROS DE BUSQUEDA",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey.shade800,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context)
+                                .push(fadeTransition(QrCodeScannerView()));
+                          },
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.qr_code_scanner,
+                                size: 30,
+                                color: Colors.grey.shade600,
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                "Escanear",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

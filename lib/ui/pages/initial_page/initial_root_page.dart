@@ -29,9 +29,7 @@ final initialPages = [
   }),
   CustomStackPage(
     "Pagos",
-    const Center(
-      child: Text("Pays"),
-    ),
+    Center(),
   ),
 ];
 
