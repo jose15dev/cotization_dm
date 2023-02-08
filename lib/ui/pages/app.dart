@@ -4,6 +4,7 @@ import 'package:cotizacion_dm/ui/pages/pages.dart';
 import 'package:cotizacion_dm/ui/transitions/transitions.dart';
 import 'package:cotizacion_dm/ui/utilities/utilities.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:cotizacion_dm/core/infrastructure/infrastructure.dart';
@@ -12,14 +13,33 @@ import '../../globals.dart';
 part 'listeners.dart';
 part 'routing.dart';
 
-class AppState extends StatelessWidget {
-  CotizationService get cotizationService => getIt();
-  QueryCotizationService get queryCotizationService => getIt();
-  SharedPreferencesCacheCotizationService get cacheCotizationService => getIt();
-  EmployeeService get employeeService => getIt();
-  SharedPreferencesCacheEmployeeService get cacheEmployeeService => getIt();
-  LiquidationService get liquidationService => getIt();
+class AppState extends StatefulWidget {
   const AppState({super.key});
+
+  @override
+  State<AppState> createState() => _AppStateState();
+}
+
+class _AppStateState extends State<AppState> {
+  CotizationService get cotizationService => getIt();
+
+  QueryCotizationService get queryCotizationService => getIt();
+
+  SharedPreferencesCacheCotizationService get cacheCotizationService => getIt();
+
+  EmployeeService get employeeService => getIt();
+
+  SharedPreferencesCacheEmployeeService get cacheEmployeeService => getIt();
+
+  LiquidationService get liquidationService => getIt();
+
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+  }
 
   @override
   Widget build(BuildContext context) {
