@@ -231,7 +231,7 @@ class _CreateCotizationViewState extends State<CreateCotizationView>
                             );
                           }
                           return ListView.builder(
-                            physics: const NeverScrollableScrollPhysics(),
+                            physics: const BouncingScrollPhysics(),
                             itemCount: snapshot.data!.length,
                             itemBuilder: (context, index) => CardItemCotization(
                               snapshot.data![index],
