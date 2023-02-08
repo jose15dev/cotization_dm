@@ -39,7 +39,9 @@ Cotization cotizationFromMap(Map<String, dynamic> map) {
     tax: map["tax"],
     color: map["color"],
     isAccount: map["is_account"],
-    finished: DateTime.fromMillisecondsSinceEpoch(map["finished"]),
+    finished: map["finished"] != null
+        ? DateTime.fromMillisecondsSinceEpoch(map["finished"])
+        : null,
     createdAt: DateTime.fromMillisecondsSinceEpoch(map["created_at"]),
     updatedAt: DateTime.fromMillisecondsSinceEpoch(map["updated_at"]),
     deletedAt: map["deleted_at"] != null
