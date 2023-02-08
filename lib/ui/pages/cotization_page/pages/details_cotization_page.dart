@@ -244,8 +244,8 @@ class _DetailsCotizationPageState extends State<DetailsCotizationPage>
                     ),
                   );
                 },
-                icon: FontAwesomeIcons.qrcode,
-                label: "QR ",
+                icon: Icons.qr_code,
+                label: "QR",
               ),
             ),
             Expanded(
@@ -253,8 +253,8 @@ class _DetailsCotizationPageState extends State<DetailsCotizationPage>
                 onTap: (details) {
                   bloc.exportToPDF(_cotization, getIt());
                 },
-                icon: FontAwesomeIcons.fileExport,
-                label: "Exportar a PDF",
+                icon: Icons.picture_as_pdf,
+                label: "PDF",
               ),
             ),
             if (_cotization.finished == null && _cotization.deletedAt == null)
