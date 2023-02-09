@@ -1,9 +1,12 @@
+import 'dart:ui';
+
 import 'package:cotizacion_dm/core/domain/domain.dart';
 import 'package:cotizacion_dm/core/infrastructure/configuration/setup.dart';
+import 'package:cotizacion_dm/shared/utilities/utilities.dart';
 import 'package:cotizacion_dm/ui/utilities/utilities.dart';
-import 'package:flutter/services.dart';
 import 'package:injectable/injectable.dart';
 import 'package:intl/intl.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
 abstract class PDFCotizationService {
@@ -32,24 +35,181 @@ class MainPDFCotizationService implements PDFCotizationService {
     left: 10.0,
     right: 10.0,
   );
+
   @override
   Future<PdfDocument> exportToPDF(Cotization cotization) async {
     PdfDocument document = PdfDocument();
     PdfPage page = document.pages.add();
-
+    var width = page.getClientSize().width;
+    var height = page.getClientSize().height;
     var taxPercent = cotization.tax ?? 0;
     var bussinessName = AppSetup.getBusinessName() ?? "";
     var location = AppSetup.getLocation() ?? "";
     var nit = AppSetup.getNIT() ?? "";
 
+    List<Map<String, dynamic>> listPosition = [
+      // App Bussiness Name
+      {
+        "text": bussinessName,
+        "top": 0.0,
+        "left": 0.0,
+        "width": 100.0,
+        "height": 50.0,
+        "style": PdfFontStyle.bold,
+        "size": 20.0,
+      },
+
+      // App Bussiness Location
+      {
+        "text": location,
+        "top": 40.0,
+        "left": 0.0,
+        "width": 100.0,
+        "height": 20.0,
+      },
+
+      // Cotization Reference Id
+      {
+        "text": "Referencia",
+        "top": 100.0,
+        "left": 0.0,
+        "width": 100.0,
+        "height": 20.0,
+        "style": PdfFontStyle.bold,
+      },
+      {
+        "text": cotization.id?.toString(),
+        "top": 100.0,
+        "left": 150.0,
+        "width": 50.0,
+        "height": 20.0,
+        "aligment": PdfTextAlignment.right,
+      },
+      // Cotization Date
+      {
+        "text": "Fecha",
+        "top": 120.0,
+        "left": 0.0,
+        "width": 100.0,
+        "height": 20.0,
+        "style": PdfFontStyle.bold,
+      },
+      {
+        "text": DateFormat.yMd().format(cotization.createdAt),
+        "top": 120.0,
+        "left": 150.0,
+        "width": 50.0,
+        "height": 20.0,
+        "aligment": PdfTextAlignment.right,
+      },
+      // App Bussiness Nit
+      {
+        "text": "NIT",
+        "top": 140.0,
+        "left": 0.0,
+        "width": 100.0,
+        "height": 20.0,
+        "style": PdfFontStyle.bold,
+      },
+      {
+        "text": nit,
+        "top": 140.0,
+        "left": 100.0,
+        "width": 100.0,
+        "height": 20.0,
+        "aligment": PdfTextAlignment.right,
+      },
+
+      // Table Title Above Header
+      {
+        "text": cotization.isAccount ? "CUENTA DE COBRO" : "COTIZACIÓN",
+        "top": 200.0,
+        "left": 0.0,
+        "width": 200.0,
+        "height": 50.0,
+        "style": PdfFontStyle.bold,
+        "size": 20.0,
+      },
+// Client Name
+      {
+        "text": "A nombre de: ",
+        "top": 250.0,
+        "left": 0.0,
+        "width": 100.0,
+        "height": 20.0,
+        "style": PdfFontStyle.bold,
+      },
+
+      {
+        "text": cotization.name,
+        "top": 250.0,
+        "left": 100.0,
+        "width": width,
+        "height": 20.0,
+      },
+      // Cotization Description
+      {
+        "text": "Descripción:",
+        "top": 270.0,
+        "left": 0.0,
+        "width": 100.0,
+        "height": 20.0,
+        "size": 12.0,
+        "style": PdfFontStyle.bold,
+      },
+      {
+        "text": cotization.description,
+        "top": 290.0,
+        "left": 0.0,
+        "width": width,
+        "height": 100.0,
+        "size": 12.0,
+        "lineAligment": PdfVerticalAlignment.top,
+      }
+    ];
+
+    for (Map<String, dynamic> item in listPosition) {
+      page.graphics.drawString(
+        item["text"],
+        PdfStandardFont(PdfFontFamily.helvetica, item["size"] ?? 12,
+            style: item["style"] ?? PdfFontStyle.regular),
+        bounds: Rect.fromLTWH(
+            item["left"], item["top"], item["width"], item["height"]),
+        format: PdfStringFormat(
+          alignment: item["aligment"] ?? PdfTextAlignment.left,
+          lineAlignment: item["lineAligment"] ?? PdfVerticalAlignment.middle,
+        ),
+      );
+    }
+
+    //QR Code
+    double qrSize = 150.0;
+    var qrBytes = (await (await QrPainter(
+      data: cotizationToQrCode(cotization),
+      version: QrVersions.auto,
+      eyeStyle: QrEyeStyle(
+        eyeShape: QrEyeShape.circle,
+        color: ColorPalete.black,
+      ),
+      gapless: false,
+    ).toImage(1440))
+            .toByteData(format: ImageByteFormat.png))!
+        .buffer
+        .asUint8List();
+
+    page.graphics.drawImage(
+        PdfBitmap(qrBytes), Rect.fromLTWH(width - qrSize, 40, qrSize, qrSize));
+
+    // Table
+
     PdfGrid grid = PdfGrid();
 
     grid.style.font = pdfStandardFont;
 
-    var headers = ["Descripcion", "Unidad", "Cantidad", "V. Unit", "V. Total"];
+    var headers = ["Concepto", "Unidad", "Cantidad", "V. Unit", "V. Total"];
     var data = cotization.items.map((e) {
       return [
-        e.name,
+        "${e.name}. ${e.description}.",
         e.unit,
         e.amount.toString(),
         CurrencyUtility.doubleToCurrency(e.unitValue),
@@ -82,97 +242,14 @@ class MainPDFCotizationService implements PDFCotizationService {
     _drawData(grid, data);
     _drawTotals(grid, totals);
 
-    var width = page.getClientSize().width;
-    var height = page.getClientSize().height;
     var fontBold =
         PdfStandardFont(PdfFontFamily.helvetica, 12, style: PdfFontStyle.bold);
-    var fontNormal = PdfStandardFont(PdfFontFamily.helvetica, 12,
-        style: PdfFontStyle.regular);
-
-    // Bussiness Name
-    page.graphics.drawString(
-      bussinessName,
-      fontBold,
-      bounds: const Rect.fromLTWH(0, 0, 300, 50),
-    );
-
-    // Location
-    page.graphics.drawString(
-      location,
-      fontNormal,
-      bounds: const Rect.fromLTWH(0, 40, 300, 50),
-    );
-    var load = await rootBundle.load("assets/img/qrcode.png");
-    var bytes = load.buffer.asUint8List();
-    // QR Code
-    page.graphics
-        .drawImage(PdfBitmap(bytes), Rect.fromLTWH(width - 50, 0, 50, 50));
-
-    // Number of Cotization
-    page.graphics.drawString(
-      "Referencia:",
-      fontBold,
-      bounds: Rect.fromLTWH(width - 150, 70, 300, 50),
-      format: PdfStringFormat(alignment: PdfTextAlignment.left),
-    );
-
-    page.graphics.drawString(
-      cotization.id.toString(),
-      fontBold,
-      bounds: Rect.fromLTWH(width - 300, 70, 300, 50),
-      format: PdfStringFormat(alignment: PdfTextAlignment.right),
-    );
-
-    // Date of cotization
-    page.graphics.drawString(
-      "Fecha:",
-      fontBold,
-      bounds: Rect.fromLTWH(width - 150, 90, 300, 50),
-      format: PdfStringFormat(alignment: PdfTextAlignment.left),
-    );
-
-    var now = DateTime.now();
-    var date = DateFormat("yyyy-MM-dd").format(now);
-
-    page.graphics.drawString(
-      date,
-      fontBold,
-      bounds: Rect.fromLTWH(width - 300, 90, 300, 50),
-      format: PdfStringFormat(alignment: PdfTextAlignment.right),
-    );
-
-    // Nit
-    page.graphics.drawString(
-      "NIT:",
-      fontBold,
-      bounds: Rect.fromLTWH(width - 150, 110, 300, 50),
-      format: PdfStringFormat(alignment: PdfTextAlignment.left),
-    );
-    page.graphics.drawString(
-      nit,
-      fontBold,
-      bounds: Rect.fromLTWH(width - 300, 110, 300, 50),
-      format: PdfStringFormat(alignment: PdfTextAlignment.right),
-    );
-
-    // Table
-    page.graphics.drawString(
-      cotization.isAccount ? "CUENTA DE COBRO" : "COTIZACION",
-      PdfStandardFont(PdfFontFamily.helvetica, 20, style: PdfFontStyle.bold),
-      bounds: const Rect.fromLTWH(0, 130, 300, 50),
-    );
-
-    page.graphics.drawString(
-      cotization.description,
-      PdfStandardFont(PdfFontFamily.helvetica, 14, style: PdfFontStyle.regular),
-      bounds: const Rect.fromLTWH(0, 160, 300, 50),
-    );
 
     var result = grid.draw(
       page: page,
       bounds: Rect.fromLTWH(
         0,
-        200,
+        350,
         width,
         600,
       ),
