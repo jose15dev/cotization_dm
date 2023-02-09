@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:cotizacion_dm/core/domain/domain.dart';
+import 'package:cotizacion_dm/ui/exceptions/form_validation.dart';
 import 'package:cotizacion_dm/ui/utilities/currency.utility.dart';
 import 'package:equatable/equatable.dart';
 import 'package:rxdart/rxdart.dart';
@@ -16,11 +17,28 @@ class CreateLiquidationCubit extends Cubit<CreateLiquidationState> {
   Stream<double> get realPrice => _realPriceCtrl.stream;
 
   CreateLiquidationCubit() : super(CreateLiquidationInitial()) {
-    _realPriceCtrl.addStream(_totalLiquidation);
+    _dayCtrl.listen((value) {
+      _realPriceCtrl.add(value * _employeeSelected.value.salary);
+    });
+  }
+
+  void resetState() {
+    emit(CreateLiquidationInitial());
   }
 
   void selectEmployee(Employee employee) {
     _employeeSelected.add(employee);
+    emit(CreateLiquidationOnEmployeeSelected());
+  }
+
+  void updateDay(String value) {
+    try {
+      NumberValidation(value);
+      final day = int.parse(value);
+      _dayCtrl.add(day);
+    } on BaseFormException catch (e) {
+      _dayCtrl.sink.addError(e);
+    }
   }
 
   void increaseDay() {
@@ -37,9 +55,14 @@ class CreateLiquidationCubit extends Cubit<CreateLiquidationState> {
     }
   }
 
-  void selectRealPrice(String value) {
-    final realPrice = CurrencyUtility.currencyToDouble(value);
-    _realPriceCtrl.add(realPrice);
+  void updateRealPrice(String value) {
+    try {
+      CurrencyValidation(value);
+      final realPrice = CurrencyUtility.currencyToDouble(value);
+      _realPriceCtrl.add(realPrice);
+    } on BaseFormException catch (e) {
+      _realPriceCtrl.sink.addError(e);
+    }
   }
 
   void sendLiquidation() {
@@ -52,8 +75,6 @@ class CreateLiquidationCubit extends Cubit<CreateLiquidationState> {
     emit(CreateLiquidationOnSend(liquidation));
   }
 
-  Stream<double> get _totalLiquidation =>
-      Rx.combineLatest2(employeeSelected, day, (a, b) => a.salary * b);
   Stream<bool> get enableInput =>
       Rx.combineLatest([employeeSelected], (values) => true);
 

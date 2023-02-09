@@ -108,7 +108,10 @@ class _SelectEmployeeViewState extends State<SelectEmployeeView> {
                 physics: const NeverScrollableScrollPhysics(),
                 itemBuilder: (context, index) {
                   var employee = state.employees[index];
-                  return EmployeeListTile(employee: employee);
+                  return EmployeeListTile(
+                    employee: employee,
+                    onTap: () {},
+                  );
                 },
                 itemCount: state.employees.length,
               );
@@ -126,16 +129,26 @@ class EmployeeListTile extends StatelessWidget {
   const EmployeeListTile({
     Key? key,
     required this.employee,
+    required this.onTap,
+    this.active = false,
   }) : super(key: key);
-
+  final bool active;
   final Employee employee;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    var hasImage = employee.image != null;
     return ListTile(
-      onTap: () => Navigator.of(context).pop(employee),
+      onTap: onTap,
+      selected: active,
+      selectedTileColor: ColorPalete.primary.withOpacity(0.2),
+      selectedColor: ColorPalete.primary,
       textColor: Colors.grey.shade600,
-      // leading: EmployeeAvatar(employee.image, id: employee.id ?? 0),
+      leading: CircleAvatar(
+        backgroundImage: hasImage ? MemoryImage(employee.image!) : null,
+        child: hasImage ? null : Text(employee.firstname[0]),
+      ),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

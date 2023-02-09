@@ -118,18 +118,6 @@ class _AppListenerState extends State<AppListener> {
             if (state is FetchLiquidationOnCreateSuccess) {
               liquidationBloc.fetchLiquidations();
             }
-            if (state is FetchLiquidationOnCreate) {
-              Navigator.of(context)
-                  .push(fadeTransition<Liquidation>(
-                      const CreateLiquidationPage()))
-                  .then((value) {
-                if (value is Liquidation) {
-                  liquidationBloc.saveLiquidation(value);
-                } else {
-                  liquidationBloc.resetState();
-                }
-              });
-            }
           },
           child: Container(),
         )

@@ -7,6 +7,11 @@ class CurrencyUtility {
     return _currencyFormat.format(number);
   }
 
+  static String doubleToCurrencyWithOutDollarSign(double number) {
+    return NumberFormat.currency(locale: "en_US", decimalDigits: 0, symbol: "")
+        .format(number);
+  }
+
   static double currencyToDouble(String currency) {
     return _currencyFormat.parse(currency).toDouble();
   }

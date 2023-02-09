@@ -28,7 +28,7 @@ class FetchLiquidationsCubit extends Cubit<FetchLiquidationsState> {
         emit(FetchLiquidationOnEmpty());
       } else {
         _liquidationsCtrl.add(records);
-        emit(FetchLiquidationOnSuccess());
+        emit(FetchLiquidationOnSuccess(records));
       }
     } catch (e) {
       emit(FetchLiquidationFailed(e.toString()));

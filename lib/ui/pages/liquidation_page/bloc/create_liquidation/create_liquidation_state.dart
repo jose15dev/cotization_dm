@@ -9,6 +9,8 @@ abstract class CreateLiquidationState extends Equatable {
 
 class CreateLiquidationInitial extends CreateLiquidationState {}
 
+class CreateLiquidationOnEmployeeSelected extends CreateLiquidationState {}
+
 class CreateLiquidationOnSend extends CreateLiquidationState {
   final Liquidation liquidation;
 

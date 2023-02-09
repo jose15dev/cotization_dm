@@ -9,7 +9,11 @@ abstract class FetchLiquidationsState extends Equatable {
 
 class FetchLiquidationsInitial extends FetchLiquidationsState {}
 
-class FetchLiquidationOnSuccess extends FetchLiquidationsState {}
+class FetchLiquidationOnSuccess extends FetchLiquidationsState {
+  final List<Liquidation> liquidations;
+
+  const FetchLiquidationOnSuccess(this.liquidations);
+}
 
 class FetchLiquidationOnCreateSuccess extends FetchLiquidationsState {}
 

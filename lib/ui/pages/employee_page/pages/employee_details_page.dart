@@ -218,11 +218,11 @@ class _EmployeeDetailsViewState extends State<_EmployeeDetailsView>
             Expanded(
               child: GradientAction(
                 onTap: (details) {
-                  Navigator.of(context)
-                      .push(fadeTransition(const InitialLiquidationPage()))
-                      .then((value) {
-                    bloc.getLiquidations();
-                  });
+                  // Navigator.of(context)
+                  //     .push(fadeTransition(const InitialLiquidationPage()))
+                  //     .then((value) {
+                  //   bloc.getLiquidations();
+                  // });
                 },
                 icon: FontAwesomeIcons.handHoldingDollar,
                 label: "Liquidar",

@@ -12,27 +12,38 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 class CustomStackPage {
   final String title;
   final Widget page;
+  final IconData? onTapIcon;
   final Function(TapDownDetails details, BuildContext context)? onTap;
 
-  CustomStackPage(this.title, this.page, {this.onTap});
+  CustomStackPage(this.title, this.page, {this.onTap, this.onTapIcon})
+      : assert(onTap != null ? onTapIcon != null : true);
 }
 
 final initialPages = [
   CustomStackPage(
     "Empleados",
     const FetchEmployeeList(),
+    onTapIcon: FontAwesomeIcons.userPlus,
     onTap: (details, context) {
       dialogEmployeeForm(context, details, withImagePicker: true);
     },
   ),
-  CustomStackPage("Cotizaciones", const AnimatedCotizationList(),
-      onTap: (detils, context) {
-    final cotizationBloc = BlocProvider.of<FetchCotizationCubit>(context);
-    cotizationBloc.onCreateCotization();
-  }),
+  CustomStackPage(
+    "Cotizaciones",
+    const AnimatedCotizationList(),
+    onTapIcon: FontAwesomeIcons.folderPlus,
+    onTap: (detils, context) {
+      final cotizationBloc = BlocProvider.of<FetchCotizationCubit>(context);
+      cotizationBloc.onCreateCotization();
+    },
+  ),
   CustomStackPage(
     "Pagos",
-    Center(),
+    const FetchLiquidationList(),
+    onTapIcon: FontAwesomeIcons.handHoldingDollar,
+    onTap: (details, context) {
+      liquidationDialog(context, details);
+    },
   ),
 ];
 
@@ -61,7 +72,7 @@ class _InitialRootPageState extends State<InitialRootPage>
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        leading: GestureDetector(
+        leading: InkWell(
           onTap: () {
             Navigator.of(context).push(fadeTransition(const PreferencesPage()));
           },
@@ -86,14 +97,14 @@ class _InitialRootPageState extends State<InitialRootPage>
               });
             }),
         actions: [
-          if (initialPages[_currentPage].onTap != null)
-            Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: GestureDetector(
-                onTapDown: (details) {
-                  initialPages[_currentPage].onTap?.call(details, context);
-                },
-                child: const Icon(FontAwesomeIcons.solidSquarePlus),
+          if (initialPages[_currentPage].onTap is Function)
+            InkWell(
+              onTapDown: (details) {
+                initialPages[_currentPage].onTap?.call(details, context);
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(right: 20.0, left: 10.0),
+                child: Icon(initialPages[_currentPage].onTapIcon!),
               ),
             ),
         ],
@@ -107,12 +118,14 @@ class _InitialRootPageState extends State<InitialRootPage>
           labelColor: ColorPalete.black,
           isScrollable: true,
           indicator: const DotPlaneIndicator(),
-          labelStyle: const TextStyle(
+          labelStyle: TextStyle(
             fontSize: 24,
+            fontFamily: fontFamily,
             fontWeight: FontWeight.bold,
           ),
-          unselectedLabelStyle: const TextStyle(
+          unselectedLabelStyle: TextStyle(
             fontSize: 16,
+            fontFamily: fontFamily,
             color: Colors.grey,
           ),
           tabs: initialPages
