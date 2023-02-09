@@ -61,16 +61,22 @@ class _FetchLiquidationListState extends State<FetchLiquidationList> {
                       padding: EdgeInsets.symmetric(
                           horizontal: constraints.maxWidth * .05,
                           vertical: constraints.maxHeight * .03),
-                      children: state.liquidations
-                          .asMap()
-                          .entries
-                          .map((e) => AnimatedLiquidationCard(
-                                liquidation: e.value,
-                                colors: Colors.primaries
-                                    .getRange(e.key, e.key + 2)
-                                    .toList(),
-                              ))
-                          .toList()),
+                      children: state.liquidations.asMap().entries.map((e) {
+                        int index = e.key;
+                        int indexColor = 0;
+                        if (index >= 18) {
+                          indexColor = index % 18;
+                        } else {
+                          indexColor = index;
+                        }
+                        var listColors = Colors.primaries
+                            .getRange(indexColor, indexColor + 2)
+                            .toList();
+                        return AnimatedLiquidationCard(
+                          liquidation: e.value,
+                          colors: listColors,
+                        );
+                      }).toList()),
                 ),
               ],
             );
