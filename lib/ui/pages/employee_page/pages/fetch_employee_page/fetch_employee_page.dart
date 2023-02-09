@@ -121,7 +121,7 @@ class _FetchEmployeeListState extends State<FetchEmployeeList> {
       indexColor = index;
     }
     var listColors =
-        Colors.primaries.getRange(indexColor, indexColor + 3).toList();
+        Colors.primaries.getRange(indexColor, indexColor + 2).toList();
     return _TransformCard(
         progress: progress,
         scale: scale,
