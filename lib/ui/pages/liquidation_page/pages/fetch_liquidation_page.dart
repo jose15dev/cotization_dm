@@ -4,6 +4,7 @@ import 'package:cotizacion_dm/ui/styled/loading_indicator.dart';
 import 'package:cotizacion_dm/ui/utilities/utilities.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class FetchLiquidationList extends StatefulWidget {
   const FetchLiquidationList({super.key});
@@ -82,8 +83,25 @@ class _FetchLiquidationListState extends State<FetchLiquidationList> {
             );
           }
           if (state is FetchLiquidationOnEmpty) {
-            return const Center(
-              child: Text("No hay liquidaciones"),
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  FontAwesomeIcons.faceSadTear,
+                  size: 100.0,
+                  color: Colors.grey.shade400,
+                ),
+                const SizedBox(
+                  height: 20.0,
+                ),
+                Text(
+                  "No hay Liquidaciones",
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    color: Colors.grey.shade400,
+                  ),
+                ),
+              ],
             );
           }
           return const SizedBox.shrink();
