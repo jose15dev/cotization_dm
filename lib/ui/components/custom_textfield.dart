@@ -2,7 +2,7 @@ import 'package:cotizacion_dm/ui/utilities/utilities.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class CustomTextfield extends StatelessWidget {
+class CustomTextfield extends StatefulWidget {
   final String label;
   final List<TextInputFormatter> formatters;
   final Function(String)? onChanged;
@@ -37,10 +37,58 @@ class CustomTextfield extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<CustomTextfield> createState() => _CustomTextfieldState();
+}
+
+class _CustomTextfieldState extends State<CustomTextfield> {
+  final FocusNode _focusNode = FocusNode();
+  late bool _readOnly;
+  late String _value;
+  @override
+  void initState() {
+    super.initState();
+    _readOnly = widget.readOnly;
+    _value = widget.value;
+    widget.stream?.listen((event) {
+      if (widget.readOnly) {
+        _value = event;
+        setState(() {});
+      }
+    });
+    _focusNode.addListener(() {
+      if (widget.onChanged != null && widget.readOnly) {
+        widget.onChanged!(_value);
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant CustomTextfield oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_readOnly && mounted) {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (MediaQuery.of(context).viewInsets.bottom == 0) {
+          _focusNode.unfocus();
+          _readOnly = widget.readOnly;
+
+          setState(() {});
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    var color = foreground ?? ColorPalete.primary;
+    var color = widget.foreground ?? ColorPalete.primary;
+
     return StreamBuilder<String>(
-        stream: stream,
+        stream: widget.stream,
         builder: (context, snapshot) {
           bool hasError = snapshot.error != null;
           Color currentColor = hasError ? ColorPalete.error : color;
@@ -49,33 +97,48 @@ class CustomTextfield extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8.0),
               child: TextField(
-                maxLines: maxLines,
-                readOnly: readOnly,
+                focusNode: _focusNode,
+                maxLines: widget.maxLines,
+                onTap: () {
+                  if (widget.readOnly) {
+                    setState(() {
+                      _readOnly = false;
+                      _focusNode.requestFocus();
+                    });
+                  }
+                },
+                readOnly: _readOnly,
                 cursorColor: currentColor,
-                onChanged: onChanged,
-                controller:
-                    readOnly ? TextEditingController(text: value) : controller,
-                textAlign: align,
+                onChanged: (value) {
+                  if (widget.onChanged is Function) widget.onChanged!(value);
+                  _value = value;
+                  setState(() {});
+                },
+                controller: _readOnly
+                    ? TextEditingController(text: snapshot.data)
+                    : widget.controller,
+                textAlign: widget.align,
                 style: TextStyle(
                   color: currentColor,
-                  fontSize: fontSize,
+                  fontSize: widget.fontSize,
                 ),
-                keyboardType: type,
-                inputFormatters: formatters,
+                keyboardType: widget.type,
+                inputFormatters: widget.formatters,
                 decoration: InputDecoration(
                     floatingLabelBehavior: FloatingLabelBehavior.never,
-                    hintText: label,
+                    hintText: widget.label,
                     border: InputBorder.none,
-                    errorText: enableError ? snapshot.error?.toString() : null,
+                    errorText:
+                        widget.enableError ? snapshot.error?.toString() : null,
                     errorStyle: TextStyle(
-                      fontSize: fontSize - 6,
+                      fontSize: widget.fontSize - 6,
                       color: ColorPalete.error,
                       fontWeight: FontWeight.bold,
                     ),
                     hintStyle: TextStyle(
                       color: currentColor.withOpacity(0.8),
                     ),
-                    filled: filled),
+                    filled: widget.filled),
               ),
             ),
           );
