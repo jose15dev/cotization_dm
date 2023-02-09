@@ -8,12 +8,16 @@ import 'package:mockito/mockito.dart';
 
 import 'fetch_cotization_bloc_test.mocks.dart';
 
-@GenerateMocks(
-    [DomainCotizationService, SharedPreferencesCacheCotizationService])
+@GenerateMocks([
+  DomainCotizationService,
+  SharedPreferencesCacheCotizationService,
+  QueryCotizationService
+])
 void main() {
   late FetchCotizationCubit mockCubit;
   late MockDomainCotizationService service;
   late MockSharedPreferencesCacheCotizationService cacheService;
+  late MockQueryCotizationService queryService;
 
   List<Cotization> empList =
       List.generate(10, (index) => _generateCotization("Test"));
@@ -22,7 +26,8 @@ void main() {
   setUp(() async {
     service = MockDomainCotizationService();
     cacheService = MockSharedPreferencesCacheCotizationService();
-    mockCubit = FetchCotizationCubit(service, cacheService);
+    queryService = MockQueryCotizationService();
+    mockCubit = FetchCotizationCubit(service, cacheService, queryService);
   });
 
   group("Fetch cotization bloc test", () {
@@ -30,6 +35,9 @@ void main() {
         'check if on fetch cache not exist works',
         build: () => mockCubit,
         setUp: () {
+          when(queryService.getOnlyNotDeleted(cotizations: empList))
+              .thenAnswer((realInvocation) => empList);
+
           when(cacheService.all())
               .thenAnswer((realInvocation) async => empList);
           when(service.all()).thenAnswer((realInvocation) async => empList);
@@ -54,6 +62,8 @@ void main() {
       act: (bloc) => bloc.fetchCotizations(),
       setUp: () {
         when(cacheService.all()).thenAnswer((realInvocation) async => []);
+        when(queryService.getOnlyNotDeleted(cotizations: empList))
+            .thenAnswer((realInvocation) => empList);
 
         when(service.all())
             .thenAnswer((realInvocation) => throw Exception("Something"));
@@ -78,6 +88,8 @@ void main() {
       build: () => mockCubit,
       act: (b) => b.deleteCotization(emp),
       setUp: () {
+        when(queryService.getOnlyNotDeleted(cotizations: empList))
+            .thenAnswer((realInvocation) => empList);
         when(service.delete(any)).thenAnswer((_) async => 1);
         when(cacheService.delete(any)).thenAnswer((_) async => 1);
       },
@@ -128,7 +140,9 @@ Cotization _generateCotization(String name) {
       color: 0x000000,
       tax: 0.19,
       isAccount: false,
-      finished: true,
+      finished: null,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
       items: [
         CotizationItem(
             name: name,

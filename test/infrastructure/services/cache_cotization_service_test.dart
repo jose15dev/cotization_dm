@@ -3,17 +3,42 @@ import 'package:cotizacion_dm/core/infrastructure/infrastructure.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+Cotization cotizationWithId(Cotization cotization, int index) {
+  return Cotization(
+      id: index,
+      name: "Test $index",
+      description: "Test $index",
+      color: 0x000000,
+      tax: 0.19,
+      isAccount: false,
+      finished: null,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      items: const [
+        CotizationItem(
+          id: 5,
+          name: "Text item",
+          description: "Text item",
+          unit: "u",
+          unitValue: 30000.0,
+          amount: 30,
+        ),
+      ]);
+}
+
 void main() async {
   late SharedPreferences prefs;
   late SharedPreferencesCacheCotizationService service;
-  var cotization = const Cotization(
+  var cotization = Cotization(
       name: "Test",
       description: "Test",
       color: 0x000000,
       tax: 0.19,
       isAccount: false,
-      finished: true,
-      items: [
+      finished: null,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      items: const [
         CotizationItem(
           id: 5,
           name: "Text item",
@@ -24,7 +49,7 @@ void main() async {
         ),
       ]);
   List<Cotization> cotizations = List.generate(10, (index) {
-    return Cotization.withId(cotization, index);
+    return cotizationWithId(cotization, index);
   }).toList();
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
@@ -42,7 +67,7 @@ void main() async {
 
     test("Save cotization on cache", () async {
       service.setCotizations(cotizations);
-      await service.save(Cotization.withId(cotization, 10));
+      await service.save(cotizationWithId(cotization, 10));
 
       var result = await service.all();
 
@@ -58,7 +83,7 @@ void main() async {
 
     test("Update cotization on cache", () async {
       service.setCotizations(cotizations);
-      await service.update(Cotization.withId(cotization, 1));
+      await service.update(cotizationWithId(cotization, 1));
 
       var result = await service.all();
 
@@ -68,7 +93,7 @@ void main() async {
 
     test("Delete cotization on cache", () async {
       service.setCotizations(cotizations);
-      var e = Cotization.withId(cotization, 5);
+      var e = cotizationWithId(cotization, 5);
       await service.delete(e);
 
       var result = await service.all();

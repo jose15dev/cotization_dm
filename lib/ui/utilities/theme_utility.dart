@@ -13,7 +13,7 @@ abstract class ColorPalete {
 abstract class ThemeUtility {
   static get light {
     return ThemeData(
-      // fontFamily: fontFamily,
+      fontFamily: fontFamily,
       scaffoldBackgroundColor: ColorPalete.white,
       appBarTheme: AppBarTheme(
         elevation: 0,

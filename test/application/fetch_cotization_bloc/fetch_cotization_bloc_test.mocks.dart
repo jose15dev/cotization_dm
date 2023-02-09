@@ -213,3 +213,146 @@ class MockSharedPreferencesCacheCotizationService extends _i1.Mock
         )),
       ) as _i4.Future<_i2.Cotization>);
 }
+
+/// A class which mocks [QueryCotizationService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockQueryCotizationService extends _i1.Mock
+    implements _i2.QueryCotizationService {
+  MockQueryCotizationService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  List<_i2.Cotization> orderByLastUpdated(
+          {required List<_i2.Cotization>? cotizations}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #orderByLastUpdated,
+          [],
+          {#cotizations: cotizations},
+        ),
+        returnValue: <_i2.Cotization>[],
+      ) as List<_i2.Cotization>);
+  @override
+  List<_i2.Cotization> orderByName(
+          {required List<_i2.Cotization>? cotizations}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #orderByName,
+          [],
+          {#cotizations: cotizations},
+        ),
+        returnValue: <_i2.Cotization>[],
+      ) as List<_i2.Cotization>);
+  @override
+  List<_i2.Cotization> orderByCreateAt(
+          {required List<_i2.Cotization>? cotizations}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #orderByCreateAt,
+          [],
+          {#cotizations: cotizations},
+        ),
+        returnValue: <_i2.Cotization>[],
+      ) as List<_i2.Cotization>);
+  @override
+  List<_i2.Cotization> orderByPrice(
+          {required List<_i2.Cotization>? cotizations}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #orderByPrice,
+          [],
+          {#cotizations: cotizations},
+        ),
+        returnValue: <_i2.Cotization>[],
+      ) as List<_i2.Cotization>);
+  @override
+  List<_i2.Cotization> getOnlyWithTax(
+          {required List<_i2.Cotization>? cotizations}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getOnlyWithTax,
+          [],
+          {#cotizations: cotizations},
+        ),
+        returnValue: <_i2.Cotization>[],
+      ) as List<_i2.Cotization>);
+  @override
+  List<_i2.Cotization> getOnlyWithoutTax(
+          {required List<_i2.Cotization>? cotizations}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getOnlyWithoutTax,
+          [],
+          {#cotizations: cotizations},
+        ),
+        returnValue: <_i2.Cotization>[],
+      ) as List<_i2.Cotization>);
+  @override
+  List<_i2.Cotization> getOnlyFinished(
+          {required List<_i2.Cotization>? cotizations}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getOnlyFinished,
+          [],
+          {#cotizations: cotizations},
+        ),
+        returnValue: <_i2.Cotization>[],
+      ) as List<_i2.Cotization>);
+  @override
+  List<_i2.Cotization> getOnlyNotFinished(
+          {required List<_i2.Cotization>? cotizations}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getOnlyNotFinished,
+          [],
+          {#cotizations: cotizations},
+        ),
+        returnValue: <_i2.Cotization>[],
+      ) as List<_i2.Cotization>);
+  @override
+  List<_i2.Cotization> getOnlyNotDeleted(
+          {required List<_i2.Cotization>? cotizations}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getOnlyNotDeleted,
+          [],
+          {#cotizations: cotizations},
+        ),
+        returnValue: <_i2.Cotization>[],
+      ) as List<_i2.Cotization>);
+  @override
+  List<_i2.Cotization> getOnlyDeleted(
+          {required List<_i2.Cotization>? cotizations}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getOnlyDeleted,
+          [],
+          {#cotizations: cotizations},
+        ),
+        returnValue: <_i2.Cotization>[],
+      ) as List<_i2.Cotization>);
+  @override
+  List<_i2.Cotization> getOnlyAccounts(
+          {required List<_i2.Cotization>? cotizations}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getOnlyAccounts,
+          [],
+          {#cotizations: cotizations},
+        ),
+        returnValue: <_i2.Cotization>[],
+      ) as List<_i2.Cotization>);
+  @override
+  List<_i2.Cotization> getOnlyNotAccounts(
+          {required List<_i2.Cotization>? cotizations}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getOnlyNotAccounts,
+          [],
+          {#cotizations: cotizations},
+        ),
+        returnValue: <_i2.Cotization>[],
+      ) as List<_i2.Cotization>);
+}

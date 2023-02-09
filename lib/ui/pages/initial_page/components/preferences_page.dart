@@ -25,7 +25,6 @@ class _PreferencesPageState extends State<PreferencesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const CustomDrawer(),
       body: _buildBody(),
     );
   }
@@ -35,10 +34,16 @@ class _PreferencesPageState extends State<PreferencesPage> {
       slivers: [
         _appbar(),
         spacer,
-        customPadding(heading("Facturacion"), 10.0),
+        customPadding(heading("Datos Generales"), 10.0),
         customPadding(_buildBusinessProperties()),
         customPadding(_buildTaxPercentPropertie()),
         customPadding(_buildLocationPropertie()),
+        customPadding(heading("Restablecer datos", () {
+          AppSetup.reset().then((value) {
+            Navigator.of(context)
+                .pushNamedAndRemoveUntil("/", (route) => false);
+          });
+        }, "Resetear"))
       ],
     );
   }

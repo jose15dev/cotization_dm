@@ -1,6 +1,4 @@
-import 'package:cotizacion_dm/ui/components/bottombar.dart';
 import 'package:cotizacion_dm/ui/pages/liquidation_page/bloc/fetch_liquidations/fetch_liquidations_cubit.dart';
-import 'package:cotizacion_dm/ui/styled/loading_indicator.dart';
 import 'package:cotizacion_dm/ui/styled/styled.dart';
 import 'package:cotizacion_dm/ui/utilities/utilities.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +24,6 @@ class _FetchLiquidationPageState extends State<FetchLiquidationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _buildBody(),
-      bottomNavigationBar: const BottomBar(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: bloc.onCreate,

@@ -1,6 +1,9 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cotizacion_dm/globals.dart';
+import 'package:cotizacion_dm/ui/bloc/bloc.dart';
 import 'package:cotizacion_dm/ui/pages/employee_page/utilities/dialog_employee.dart';
 import 'package:cotizacion_dm/ui/pages/pages.dart';
+import 'package:cotizacion_dm/ui/transitions/custom_transtion.dart';
 import 'package:cotizacion_dm/ui/utilities/utilities.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -52,13 +55,36 @@ class _InitialRootPageState extends State<InitialRootPage>
         length: initialPages.length, vsync: this, initialIndex: _currentPage);
   }
 
+  SetupPropertiesCubit get setupBloc => BlocProvider.of(context);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      drawer: const CustomDrawer(),
       appBar: AppBar(
-        title: Text(titleApp),
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(fadeTransition(const PreferencesPage()));
+          },
+          child: Icon(
+            Icons.settings_outlined,
+            color: ColorPalete.black,
+          ),
+        ),
+        title: StreamBuilder<String?>(
+            stream: setupBloc.businessNameStream,
+            builder: (context, snapshot) {
+              return LayoutBuilder(builder: (context, constraints) {
+                return AutoSizeText(
+                  snapshot.data ?? titleApp,
+                  presetFontSizes: const [
+                    30,
+                    25,
+                    20,
+                  ],
+                  maxLines: 1,
+                );
+              });
+            }),
         actions: [
           if (initialPages[_currentPage].onTap != null)
             Padding(
