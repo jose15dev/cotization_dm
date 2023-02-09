@@ -46,9 +46,8 @@ class _QrCodeScannerViewState extends State<QrCodeScannerView> {
     final secondaryElementColor = ColorPalete.white;
     final primaryTextColor = ColorPalete.white;
     final background = ColorPalete.black.withOpacity(0.7);
-    return Scaffold(
-      extendBody: true,
-      body: Stack(
+    return Material(
+      child: Stack(
         children: <Widget>[
           Positioned.fill(
             child: QRView(
@@ -65,11 +64,12 @@ class _QrCodeScannerViewState extends State<QrCodeScannerView> {
               ),
             ),
           ),
+
+          // Top Actions
           Positioned(
-              top: 20.0,
+              top: kToolbarHeight,
               left: 0.0,
               right: 20.0,
-              height: kToolbarHeight,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -110,7 +110,6 @@ class _QrCodeScannerViewState extends State<QrCodeScannerView> {
                 ],
               )),
 
-          // Top Actions
           Align(
             alignment: FractionalOffset(.5, paddingOffsetDy),
             child: Text(
@@ -120,6 +119,7 @@ class _QrCodeScannerViewState extends State<QrCodeScannerView> {
                 fontWeight: FontWeight.bold,
                 color: primaryTextColor,
               ),
+              textAlign: TextAlign.center,
             ),
           ),
 
