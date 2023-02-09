@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cotizacion_dm/ui/utilities/utilities.dart';
 import 'package:flutter/material.dart';
 
@@ -28,55 +29,60 @@ class CustomButton extends StatelessWidget {
     var borderRadius = BorderRadius.circular(15.0);
     var currentForeground =
         bordered ? foreground ?? ColorPalete.primary : ColorPalete.white;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        onTapDown: onTapDown,
-        borderRadius: borderRadius,
-        child: Ink(
-          padding: const EdgeInsets.symmetric(horizontal: 10.0),
-          decoration: BoxDecoration(
-            color: gradientColors.isNotEmpty
-                ? null
-                : bordered
-                    ? ColorPalete.white
-                    : ColorPalete.primary,
-            gradient: gradientColors.isNotEmpty
-                ? LinearGradient(
-                    colors: gradientColors,
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  )
-                : null,
-            border: _border(),
-            borderRadius: borderRadius,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (icon != null) ...[
-                  Icon(icon, size: fontSize, color: currentForeground),
-                  const SizedBox(width: 10)
-                ],
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: currentForeground,
-                    fontSize: fontSize,
-                    fontWeight: FontWeight.bold,
+    return LayoutBuilder(builder: (context, constraints) {
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          onTapDown: onTapDown,
+          borderRadius: borderRadius,
+          child: Ink(
+            width: constraints.maxWidth,
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            decoration: BoxDecoration(
+              color: gradientColors.isNotEmpty
+                  ? null
+                  : bordered
+                      ? ColorPalete.white
+                      : ColorPalete.primary,
+              gradient: gradientColors.isNotEmpty
+                  ? LinearGradient(
+                      colors: gradientColors,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
+              border: _border(),
+              borderRadius: borderRadius,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (icon != null) ...[
+                    Icon(icon, size: fontSize, color: currentForeground),
+                    const SizedBox(width: 10)
+                  ],
+                  Expanded(
+                    child: AutoSizeText(
+                      label,
+                      presetFontSizes: [fontSize, fontSize - 2, fontSize - 4],
+                      style: TextStyle(
+                        color: currentForeground,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Border? _border() {
