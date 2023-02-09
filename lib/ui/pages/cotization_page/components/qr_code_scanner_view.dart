@@ -221,7 +221,7 @@ class _QrCodeScannerViewState extends State<QrCodeScannerView> {
     controller.resumeCamera();
     controller.scannedDataStream.listen((scanData) {
       try {
-        var cotization = cotizationFromJson(scanData.code!);
+        var cotization = qrCodeToCotization(scanData.code!);
         _cotization = cotization;
       } catch (e) {
         _isFailed = true;
