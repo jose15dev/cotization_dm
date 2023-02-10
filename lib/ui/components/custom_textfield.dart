@@ -65,7 +65,7 @@ class _CustomTextfieldState extends State<CustomTextfield> {
   @override
   void didUpdateWidget(covariant CustomTextfield oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!_readOnly && mounted) {
+    if (!_readOnly && mounted && widget.readOnly) {
       Future.delayed(const Duration(milliseconds: 100), () {
         if (MediaQuery.of(context).viewInsets.bottom == 0) {
           _focusNode.unfocus();
