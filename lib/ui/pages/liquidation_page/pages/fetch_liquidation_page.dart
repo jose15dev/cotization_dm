@@ -15,6 +15,7 @@ class FetchLiquidationList extends StatefulWidget {
 
 class _FetchLiquidationListState extends State<FetchLiquidationList> {
   FetchLiquidationsCubit get bloc => BlocProvider.of(context);
+  String _search = "";
   @override
   void initState() {
     super.initState();
@@ -25,87 +26,119 @@ class _FetchLiquidationListState extends State<FetchLiquidationList> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      return BlocBuilder<FetchLiquidationsCubit, FetchLiquidationsState>(
-        builder: (context, state) {
-          if (state is FetchLiquidationOnLoading) {
-            return const Center(
-              child: LoadingIndicator(),
-            );
-          }
-          if (state is FetchLiquidationOnSuccess) {
-            return Stack(
-              children: [
-                Positioned(
-                  height: constraints.maxHeight * 0.5,
-                  left: 0,
-                  right: 0,
-                  bottom: -constraints.maxHeight * 0.2,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: ColorPalete.black.withOpacity(0.5),
-                          blurRadius: 90,
-                          spreadRadius: 50,
-                          offset: Offset.zero,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Positioned.fill(
-                  child: PerspectiveListView(
-                      visualizedItems: 8,
-                      initialIndex: state.liquidations.length - 1,
-                      itemExtent: constraints.maxHeight * .4,
-                      padding: EdgeInsets.symmetric(
-                          horizontal: constraints.maxWidth * .05,
-                          vertical: constraints.maxHeight * .03),
-                      children: state.liquidations.asMap().entries.map((e) {
-                        int index = e.key;
-                        int indexColor = 0;
-                        if (index >= 18) {
-                          indexColor = index % 18;
-                        } else {
-                          indexColor = index;
-                        }
-                        var listColors = Colors.primaries
-                            .getRange(indexColor, indexColor + 2)
-                            .toList();
-                        return AnimatedLiquidationCard(
-                          liquidation: e.value,
-                          colors: listColors,
-                        );
-                      }).toList()),
-                ),
-              ],
-            );
-          }
-          if (state is FetchLiquidationOnEmpty) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  FontAwesomeIcons.faceSadTear,
-                  size: 100.0,
-                  color: Colors.grey.shade400,
-                ),
-                const SizedBox(
-                  height: 20.0,
-                ),
-                Text(
-                  "No hay Liquidaciones",
-                  style: TextStyle(
-                    fontSize: 20.0,
+      return Stack(
+        children: [
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 10,
+            height: constraints.maxHeight * 0.1,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: CustomTextfield(
+                align: TextAlign.start,
+                label: "Buscar",
+                filled: true,
+                onChanged: ((p0) => setState(() => _search = p0)),
+                suffixIcon: InkWell(
+                  onTap: () {
+                    bloc.filterLiquidationByName(_search);
+                  },
+                  child: Icon(
+                    FontAwesomeIcons.magnifyingGlass,
                     color: Colors.grey.shade400,
                   ),
                 ),
-              ],
-            );
-          }
-          return const SizedBox.shrink();
-        },
+              ),
+            ),
+          ),
+          Positioned.fill(
+            top: constraints.maxHeight * .1,
+            child: BlocBuilder<FetchLiquidationsCubit, FetchLiquidationsState>(
+              builder: (context, state) {
+                if (state is FetchLiquidationOnLoading) {
+                  return const Center(
+                    child: LoadingIndicator(),
+                  );
+                }
+                if (state is FetchLiquidationOnSuccess) {
+                  return Stack(
+                    children: [
+                      Positioned(
+                        height: constraints.maxHeight * 0.5,
+                        left: 0,
+                        right: 0,
+                        bottom: -constraints.maxHeight * 0.2,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: ColorPalete.black.withOpacity(0.5),
+                                blurRadius: 90,
+                                spreadRadius: 50,
+                                offset: Offset.zero,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Positioned.fill(
+                        child: PerspectiveListView(
+                            visualizedItems: 8,
+                            initialIndex: state.liquidations.length - 1,
+                            itemExtent: constraints.maxHeight * .4,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: constraints.maxWidth * .05,
+                                vertical: constraints.maxHeight * .03),
+                            children:
+                                state.liquidations.asMap().entries.map((e) {
+                              int index = e.key;
+                              int indexColor = 0;
+                              if (index >= 18) {
+                                indexColor = index % 18;
+                              } else {
+                                indexColor = index;
+                              }
+                              var listColors = Colors.primaries
+                                  .getRange(indexColor, indexColor + 2)
+                                  .toList();
+                              return AnimatedLiquidationCard(
+                                liquidation: e.value,
+                                colors: listColors,
+                              );
+                            }).toList()),
+                      ),
+                    ],
+                  );
+                }
+                if (state is FetchLiquidationOnEmpty) {
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        FontAwesomeIcons.faceSadTear,
+                        size: 100.0,
+                        color: Colors.grey.shade400,
+                      ),
+                      const SizedBox(
+                        height: 20.0,
+                      ),
+                      Text(
+                        "No hay Liquidaciones",
+                        style: TextStyle(
+                          fontSize: 20.0,
+                          color: Colors.grey.shade400,
+                        ),
+                      ),
+                    ],
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+        ],
       );
     });
   }

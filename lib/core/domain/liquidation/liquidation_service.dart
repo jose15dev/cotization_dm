@@ -8,6 +8,11 @@ abstract class LiquidationService {
   Future<int> delete(Liquidation liquidation);
 }
 
+abstract class QueryLiquidationService {
+  List<Liquidation> findByEmployeeFullname(
+      List<Liquidation> liquidations, String name);
+}
+
 @Injectable(as: LiquidationService)
 class DomainLiquidationService implements LiquidationService {
   final LiquidationRepository _repository;
@@ -39,5 +44,18 @@ class DomainLiquidationService implements LiquidationService {
   @override
   Future<List<Liquidation>> findByEmployee(Employee employee) {
     return _repository.findByEmployeeId(employee.id!);
+  }
+}
+
+class DomainQueryLiquidationService extends QueryLiquidationService {
+  @override
+  List<Liquidation> findByEmployeeFullname(
+      List<Liquidation> liquidations, String name) {
+    return liquidations.where((element) {
+      var fullname =
+          "${element.employee.firstname} ${element.employee.lastname}"
+              .toLowerCase();
+      return fullname.contains(name.toLowerCase());
+    }).toList();
   }
 }

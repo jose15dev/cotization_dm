@@ -17,6 +17,7 @@ class CustomTextfield extends StatefulWidget {
   final String value;
   final bool enableError;
   final int maxLines;
+  final Widget? suffixIcon;
 
   const CustomTextfield({
     Key? key,
@@ -34,6 +35,7 @@ class CustomTextfield extends StatefulWidget {
     this.value = "",
     this.enableError = false,
     this.maxLines = 1,
+    this.suffixIcon,
   }) : super(key: key);
 
   @override
@@ -125,20 +127,22 @@ class _CustomTextfieldState extends State<CustomTextfield> {
                 keyboardType: widget.type,
                 inputFormatters: widget.formatters,
                 decoration: InputDecoration(
-                    floatingLabelBehavior: FloatingLabelBehavior.never,
-                    hintText: widget.label,
-                    border: InputBorder.none,
-                    errorText:
-                        widget.enableError ? snapshot.error?.toString() : null,
-                    errorStyle: TextStyle(
-                      fontSize: widget.fontSize - 6,
-                      color: ColorPalete.error,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    hintStyle: TextStyle(
-                      color: currentColor.withOpacity(0.8),
-                    ),
-                    filled: widget.filled),
+                  floatingLabelBehavior: FloatingLabelBehavior.never,
+                  hintText: widget.label,
+                  border: InputBorder.none,
+                  errorText:
+                      widget.enableError ? snapshot.error?.toString() : null,
+                  errorStyle: TextStyle(
+                    fontSize: widget.fontSize - 6,
+                    color: ColorPalete.error,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  hintStyle: TextStyle(
+                    color: currentColor.withOpacity(0.8),
+                  ),
+                  filled: widget.filled,
+                  suffixIcon: widget.suffixIcon,
+                ),
               ),
             ),
           );

@@ -8,6 +8,8 @@ part 'fetch_liquidations_state.dart';
 
 class FetchLiquidationsCubit extends Cubit<FetchLiquidationsState> {
   final LiquidationService _service;
+  final DomainQueryLiquidationService _queryService =
+      DomainQueryLiquidationService();
   final _liquidationsCtrl = BehaviorSubject<List<Liquidation>>();
   Stream<List<Liquidation>> get liquidationStream => _liquidationsCtrl.stream;
   FetchLiquidationsCubit(this._service) : super(FetchLiquidationsInitial());
@@ -32,6 +34,18 @@ class FetchLiquidationsCubit extends Cubit<FetchLiquidationsState> {
       }
     } catch (e) {
       emit(FetchLiquidationFailed(e.toString()));
+    }
+  }
+
+  void filterLiquidationByName(String name) async {
+    emit(FetchLiquidationOnLoading());
+    await DelayUtility.delay();
+    var records =
+        _queryService.findByEmployeeFullname(_liquidationsCtrl.value, name);
+    if (records.isEmpty) {
+      emit(FetchLiquidationOnEmpty());
+    } else {
+      emit(FetchLiquidationOnSuccess(records));
     }
   }
 
